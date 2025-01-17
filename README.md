@@ -12,7 +12,7 @@ Important Next steps, some coments and packages.
 For interactive network graphs, some possilbe packages:
    - https://vega.github.io/vega/examples/force-directed-layout/  
    - https://plotly.com/python/network-graphs/
-   - http://tinyurl.com/2a4nhxhk 
+   - http://tinyurl.com/2a4nhxhk (Vega example)
    - https://dash.plotly.com/cytoscape#dash-cytoscape
 
 Possible grpahs to make:  
