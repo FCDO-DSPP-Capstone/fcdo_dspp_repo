@@ -7,3 +7,14 @@ Thers an HTML file on outputs folder with the pca interactive visualization. Dow
 Web page: https://juanipiquer.github.io/fcdo_dspp_repo/
 
 
+Important Next steps, some coments and packages.  
+
+For interactive network graphs, some possilbe packages:
+   - https://vega.github.io/vega/examples/force-directed-layout/  
+   - https://plotly.com/python/network-graphs/   
+
+Possible grpahs to make: 
+    - Similarity scores between countries both on voting pattenr and on speech patterns. USing heat map visuzlaition from vega lite or similar.
+
+ 
+
