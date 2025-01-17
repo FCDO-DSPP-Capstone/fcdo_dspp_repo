@@ -14,7 +14,6 @@ For interactive network graphs, some possilbe packages:
    - https://plotly.com/python/network-graphs/   
 
 Possible grpahs to make:  
-
     - Similarity scores between countries both on voting pattenr and on speech patterns. USing heat map visuzlaition from vega lite or similar.
 
  
