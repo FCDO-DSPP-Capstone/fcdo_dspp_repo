@@ -20,3 +20,10 @@ Possible grpahs to make:
 
  
 
+ -- About UN votes and UN speeches connections
+   In theory is possible to match speeches dates and voting dates to see similiarty and think to build a connection system 
+
+-- It would be possible to make a By sesssion PCA clustering based on speeches similarity in a given session 
+
+
+
