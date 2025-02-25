@@ -11,7 +11,7 @@ import plotly.graph_objects as go
 
 
 # Load data
-df = pd.read_csv("openalex_combined_dataset.csv")
+df = pd.read_csv("Grant - OpenAlex/openalex_combined_dataset.csv")
 
 # Introduce Dash app
 app = Dash(__name__)
