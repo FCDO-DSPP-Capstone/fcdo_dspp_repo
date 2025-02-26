@@ -334,3 +334,8 @@ print(mean_distance_per_pair)
 ### Compute the total mean score of entropy of each country
 # this should be added as "Country Entropy: XX" as text beofre the table 
 # but after the Country selector. 
+
+
+### Separate votes by language 
+## Agregarle botón para seleccionar que países resaltar desde la lista completa para any givren year
+# eso hay q hacerlo en dash 
