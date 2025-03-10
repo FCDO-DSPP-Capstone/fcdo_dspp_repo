@@ -231,8 +231,7 @@ app.layout = html.Div([
         step=1
     ),
 
-    html.Br(),
-    html.Br(),
+    html.Div(style={'height': '100px'}),
 
     html.H3("Country Pairwise Co-Cluster Table since 1990", style={'font-family': 'Helvetica'}),
     dcc.Dropdown(
