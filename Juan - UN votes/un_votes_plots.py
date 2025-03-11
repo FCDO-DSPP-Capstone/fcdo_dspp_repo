@@ -11,7 +11,6 @@ It also enrich the data set with world bank data for population and GDP
 import pandas as pd
 import numpy as np
 import plotly.express as px
-from itertools import combinations
 
 import dash
 from dash import dcc, html, Input, Output, dash_table
@@ -23,184 +22,29 @@ from sklearn.metrics import pairwise_distances
 ####################################
 ## 1. IMPORT DATA ##################
 ####################################
-pca_results = pd.read_csv('Juan - UN votes/pca_results.csv')
+pca_results = pd.read_csv('Juan - UN votes/data_output/pca_results.csv')
 pca_results = pca_results[pca_results['year'] >= 1990]
 
 pca_results['cluster'] = pca_results['cluster'].astype('category') 
 
+association_scores = pd.read_csv('Juan - UN votes/data_output/association_scores.csv') 
 
-#### tables of more and least clustered 
-# Compute Co-Clustering Score
-countries = pca_results['ms_name'].unique() 
-co_cluster_matrix = pd.DataFrame(0, index=countries, columns=countries)
+mean_distance_table = association_scores.groupby('Country 1')['Mean distance'].mean().reset_index()
+mean_distance_table = mean_distance_table.rename(columns={'Mean distance': 'Mean Mean Distance'})
 
-for year in pca_results[pca_results['year'] >= 1990]['year'].unique():
-    year_data = pca_results[pca_results['year'] == year]
-    clusters = year_data.groupby('cluster')['ms_name'].apply(list)
-    
-    for country_list in clusters:
-        for c1, c2 in combinations(country_list, 2):
-            co_cluster_matrix.loc[c1, c2] += 1
-            co_cluster_matrix.loc[c2, c1] += 1
-
-co_cluster_matrix = co_cluster_matrix / pca_results[pca_results['year'] >= 1990]['year'].nunique()
-
-# Top 10 most clustered together pairs
-top_10_pairs = co_cluster_matrix.unstack().sort_values(ascending=False)
-top_10_pairs_table = pd.DataFrame(top_10_pairs, columns=['Co-Cluster Score']).reset_index()
-top_10_pairs_table.columns = ['Country 1', 'Country 2', 'Co-Cluster Score']
-
-top_10_pairs_table['Country 1'] = top_10_pairs_table['Country 1'].apply(lambda x: ' '.join(word.capitalize() for word in x.split()))
-top_10_pairs_table['Country 2'] = top_10_pairs_table['Country 2'].apply(lambda x: ' '.join(word.capitalize() for word in x.split()))
-
-
-print("Top 10 Most Clustered Together Pairs:")
-print(top_10_pairs_table)
 
 
 #######################################################
 ## 2. UN PCA votes plot with year slider ##
 #######################################################
 
-
-app = dash.Dash(__name__)
-
-app.layout = html.Div([
-    html.H1('UN votes PCA', style={'font-family': 'Helvetica', 'text-align': 'center'}),
-    html.H4('Nominal GDP per capita percentile', style={'font-family': 'Helvetica'}),
-    dcc.RangeSlider(
-        id='gdp-slider',
-        min=0,
-        max=1,
-        value=[0, 1],
-        marks={str(i): {'label': str(int(i * 100)) + '%', 'style': {'font-family': 'Helvetica'}} for i in np.arange(0, 1.01, 0.05)},
-    ),
-    html.H4('Year', style={'font-family': 'Helvetica'}),
-    dcc.Slider(
-        id='year-slider',
-        min=pca_results['year'].min(),
-        max=pca_results['year'].max(),
-        value=pca_results['year'].max(),
-        marks={str(i): {'label': str(i), 'style': {'font-family': 'Helvetica', 'writing-mode': 'vertical-lr'}} for i in range(pca_results['year'].min(), pca_results['year'].max(), 1)},
-        step=1
-    ), 
-    html.Br(),
-
-    dcc.Graph(id='pca-graph', style={'font-family': 'Helvetica'}),
-
-])
-
-@app.callback(
-    Output('pca-graph', 'figure'),
-    Input('gdp-slider', 'value'),
-    Input('year-slider', 'value')
-)
-def update_figure(gdp_range, year):
-    pca_results_filtered = pca_results[(pca_results['gdp_pp'] >= gdp_range[0]) & (pca_results['gdp_pp'] <= gdp_range[1]) & (pca_results['year'] == year)]
-    fig = px.scatter(
-        pca_results_filtered,
-        x='PCA1',
-        y='PCA2',
-        color='cluster',
-        hover_data={'ms_name': True, 'PCA1': False, 'PCA2': False},
-        title='PCA on five year rolling window',
-        labels={'PCA1': 'Principal component 1', 'PCA2': 'Principal component 2'},
-        template='plotly_white'
-    )
-    fig.update_layout(
-        font=dict(
-            family='Helvetica', 
-            size=14,
-            color='black'
-        ),
-        title_x=0.5,
-        title={
-            'text': f'PCA on five year rolling window', 
-            'subtitle' : {
-                'text': f'Year = {year} <br> GDP PP = [{gdp_range[0]:.2f}, {gdp_range[1]:.2f}]'
-                }})
-
-    return fig
-
-if __name__ == '__main__':
-    app.run_server(debug=True)
-
-#fig.write_html("outputs/interactive_pca_plot with windows.html", auto_play=False)
-
-
-#######################################################
-## 3. Table of Co-Cluster score with country filter ##
-#######################################################
-
-
-
-
-##  Store table as a dash app 
-# Initialize Dash app
-app = dash.Dash(__name__)
-
-percentage = FormatTemplate.percentage(2)
-
-app.layout = html.Div([
-    html.H3("Country Pairwise Co-Cluster Table"),
-    
-    # Dropdown to select Country 1
-    dcc.Dropdown(
-        id='country-1-dropdown',
-        options=[{'label': c, 'value': c} for c in sorted(top_10_pairs_table['Country 1'].unique())],
-        value=top_10_pairs_table['Country 1'].unique()[0],  # Default selection
-        clearable=False
-    ),
-    
-    # Sorting Button
-    html.Button("Sort: Descending", id="sort-button", n_clicks=0),
-
-    # DataTable to display filtered data
-    dash_table.DataTable(
-        id='filtered-table',
-        columns=[
-            {'name': 'Country 2', 'id': 'Country 2'},
-            dict(name='Co-Cluster Score', id='Co-Cluster Score', type='numeric', format=percentage)
-        ],
-        style_table={'overflowX': 'auto'},
-        style_cell={'textAlign': 'left'},
-        sort_action="none"  # We handle sorting manually
-    )
-])
-
-@app.callback(
-    Output('filtered-table', 'data'),
-    Output('sort-button', 'children'),
-    Input('country-1-dropdown', 'value'),
-    Input('sort-button', 'n_clicks')
-)
-def update_table(selected_country, n_clicks):
-    # Filter based on selected "Country 1"
-    filtered_df = top_10_pairs_table[top_10_pairs_table['Country 1'] == selected_country].copy()
-    
-    # Determine sorting order
-    ascending = n_clicks % 2 == 1  # Toggle sorting direction
-    filtered_df = filtered_df.sort_values('Co-Cluster Score', ascending=ascending)
-    
-    # Update button text
-    button_text = "Sort: Ascending" if ascending else "Sort: Descending"
-
-    return filtered_df.to_dict('records'), button_text
-
-# Run the app
-if __name__ == '__main__':
-    app.run_server(debug=True)
-
-
-
 #### Combined app testing 
-
 app = dash.Dash(__name__)
 
 percentage = FormatTemplate.percentage(2)
 
 app.layout = html.Div([
-    html.H1('UN votes PCA', style={'font-family': 'Helvetica', 'text-align': 'center'}),
+    html.H1('UN votes in the General Assembly', style={'font-family': 'Helvetica', 'text-align': 'center'}),
     html.H4('Nominal GDP per capita percentile', style={'font-family': 'Helvetica'}),
     dcc.RangeSlider(
         id='gdp-slider',
@@ -237,20 +81,35 @@ app.layout = html.Div([
     dcc.Dropdown(
         id='country-1-dropdown',
         value='United Kingdom',
-        options=[{'label': c, 'value': c} for c in sorted(top_10_pairs_table['Country 1'].unique())],
+        options=[{'label': c, 'value': c} for c in sorted(association_scores['Country 1'].unique())],
         clearable=False,
         style={'font-family': 'Helvetica'}
     ),
-    html.Button("Sort: Descending", id="sort-button", n_clicks=0),
     dash_table.DataTable(
         id='filtered-table',
         columns=[
             {'name': 'Country 2', 'id': 'Country 2'},
-            dict(name='Co-Cluster Score', id='Co-Cluster Score', type='numeric', format=percentage)
+            dict(name='Co-Cluster Score', id='Co-Cluster Score', type='numeric', format=percentage),
+            dict(name='Mean distance', id='Mean distance', type='numeric', format=percentage)
         ],
         style_table={'overflowX': 'auto'},
         style_cell={'textAlign': 'left', 'font-family': 'Helvetica'},
-        sort_action="none"
+        sort_action="native"
+    ), 
+    
+    html.Br(), 
+
+    html.H3("Mean Mean Distance Table", style={'font-family': 'Helvetica'}),
+    dash_table.DataTable(
+        id='mean-distance-table',
+        columns=[
+            {'name': 'Country 1', 'id': 'Country 1'},
+            dict(name='Mean Mean Distance', id='Mean Mean Distance', type='numeric', format=percentage)
+        ],
+        data=mean_distance_table.to_dict('records'),
+        style_table={'overflowX': 'auto'},
+        style_cell={'textAlign': 'left', 'font-family': 'Helvetica'},
+        sort_action="native"
     )
 ])
 
@@ -266,9 +125,12 @@ def update_figure(gdp_range, pop_range, year):
         pca_results_filtered,
         x='PCA1',
         y='PCA2',
-        color='cluster',
-        hover_data={'ms_name': True, 'PCA1': False, 'PCA2': False, 'pop': ':.2%', 'gdp_pp': ':.2%', 'cluster': False},
-        labels={'PCA1': 'Principal component 1', 'PCA2': 'Principal component 2'},
+        color='region_name',
+        color_discrete_sequence=['rgb(17, 112, 170)', 'rgb(252, 125, 11)', 'rgb(163, 172, 185)', 'rgb(95, 162, 206)', 'rgb(200, 82, 0)', 'rgb(123, 132, 143)', 'rgb(163, 204, 233)', 'rgb(255, 188, 121)', 'rgb(200, 208, 217)'],
+        hover_data={'ms_name': True, 
+                    'region_name': True,
+                     'PCA1': False, 'PCA2': False, 'pop': ':.2%', 'gdp_pp': ':.2%', 'cluster': False},
+        labels={'PCA1': '', 'PCA2': ''},
         template='plotly_white'
     )
     fig.update_layout(
@@ -279,99 +141,41 @@ def update_figure(gdp_range, pop_range, year):
         ),
         title_x=0.5,
         title={
-            'text': f'PCA on five year rolling window',
+            'text': f'UN countries relative position given their votes',
             'subtitle': {
-                'text': f'Year: {year} <br> GDP PP range: {gdp_range[0]:.2%} to {gdp_range[1]:.2%} <br> Population range: {pop_range[0]:.2%} to {pop_range[1]:.2%}',
+                'text': f'Year: {year} <br> GDP PP range: {gdp_range[0]:.2%} to {gdp_range[1]:.2%} <br> Population range: {pop_range[0]:.2%} to {pop_range[1]:.2%} <br> Total countries: {len(pca_results_filtered)} <br> ',
             }
         }, 
         margin = dict(t = 200),
+        legend_title_text = 'Continent',
     )
     return fig
 
 @app.callback(
     Output('filtered-table', 'data'),
-    Output('sort-button', 'children'),
     Input('country-1-dropdown', 'value'),
-    Input('sort-button', 'n_clicks')
 )
-def update_table(selected_country, n_clicks):
-    
-    filtered_df = top_10_pairs_table[top_10_pairs_table['Country 1'] == selected_country].copy()
-    ascending = n_clicks % 2 == 1
-    filtered_df = filtered_df.sort_values('Co-Cluster Score', ascending=ascending)
-    button_text = "Sort: Ascending" if ascending else "Sort: Descending"
-    return filtered_df.to_dict('records'), button_text
-
+def update_table(selected_country):
+    filtered_df = association_scores[association_scores['Country 1'] == selected_country].copy()
+    return filtered_df.to_dict('records')
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run(debug=True)
 
 #######
 
 
 
 
-#### compute average distance between countries in PCA space 
-## Compute alongside co clusters. Allows to see the Partner grouping rate as well as a more indivudal distance rate.
+# Calculate the correlation between Co-Cluster Score and Mean Distance
+#correlation = association_scores[['Co-Cluster Score', 'Mean distance']].corr().iloc[0, 1]
 
-
-# Assume 'results' contains PCA1, PCA2, ms_name (Country), and year
-pca_results_filter = pca_results[pca_results['year'] >= 1990].copy()
-
-def compute_pairwise_distances(pca_results):
-    # Store distance results
-    all_distances = []
-
-    # Compute pairwise distances per year
-    for year in pca_results['year'].unique():
-        yearly_data = pca_results[pca_results['year'] == year]
-        
-        # Extract country names and PCA coordinates
-        country_names = yearly_data['ms_name'].values
-        pca_coords = yearly_data[['PCA1', 'PCA2']].values
-
-        # Compute pairwise Euclidean distances
-        distances = pairwise_distances(pca_coords, metric='euclidean')
-        
-        # Convert to DataFrame in long format
-        distance_df = pd.DataFrame(distances, index=country_names, columns=country_names).reset_index()
-        distance_df = pd.DataFrame({'Country 1': np.repeat(country_names, len(country_names)), 
-                                    'Country 2': np.tile(country_names, len(country_names)), 
-                                    'distance': distances.flatten()})
-        distance_df['year'] = year
-        
-        all_distances.append(distance_df)
-
-    # Concatenate all yearly results
-    long_format_distances = pd.concat(all_distances, ignore_index=True)
-
-    # Remove self-distances (Country 1 == Country 2)
-    long_format_distances = long_format_distances[long_format_distances['Country 1'] != long_format_distances['Country 2']]
-
-    # Compute the mean distance per (Country 1, Country 2) pair
-    mean_distance_per_pair = long_format_distances.groupby(['Country 1', 'Country 2'])['distance'].mean().reset_index()
-    mean_distance_per_pair = mean_distance_per_pair.sort_values('distance', ascending=False)
-
-    return mean_distance_per_pair
-
-# Compute pairwise distances
-mean_distance_per_pair = compute_pairwise_distances(pca_results_filter)
-
-# Display result
-print(mean_distance_per_pair)
-
-
-
-### Compute the total mean score of entropy of each country
-# this should be added as "Country Entropy: XX" as text beofre the table 
-# but after the Country selector. 
-# Calcualteit 
+# Print the total correlation
+print(f"Total Correlation between Co-Cluster Score and Mean Distance: {correlation:.2f}")
 
 
 ### Separate votes by country 
 ## Agregarle botón para seleccionar que países resaltar desde la lista completa para any givren year
-# eso hay q hacerlo en dash
+# eso hay q hacerlo en das
 
-
-
-## Agregar World bank data. 
+## Tabla con mean mean distance por pais (más alto  = pais menos asociativo)
