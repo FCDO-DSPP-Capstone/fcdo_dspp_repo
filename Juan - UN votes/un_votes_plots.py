@@ -174,8 +174,9 @@ if __name__ == '__main__':
 print(f"Total Correlation between Co-Cluster Score and Mean Distance: {correlation:.2f}")
 
 
-### Separate votes by country 
+### Separate votes by country # most impurtant votes?
 ## Agregarle botón para seleccionar que países resaltar desde la lista completa para any givren year
 # eso hay q hacerlo en das
 
-## Tabla con mean mean distance por pais (más alto  = pais menos asociativo)
+# Mezclar todas las aplicaciones 
+
