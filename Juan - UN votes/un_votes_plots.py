@@ -147,6 +147,12 @@ def update_figure(gdp_range, pop_range, year):
             }
         }, 
         margin = dict(t = 200),
+        xaxis=dict(
+            showticklabels=False,
+        ),
+        yaxis=dict(
+            showticklabels=False,
+        ),
         legend_title_text = 'Continent',
     )
     return fig
@@ -171,7 +177,7 @@ if __name__ == '__main__':
 #correlation = association_scores[['Co-Cluster Score', 'Mean distance']].corr().iloc[0, 1]
 
 # Print the total correlation
-print(f"Total Correlation between Co-Cluster Score and Mean Distance: {correlation:.2f}")
+#print(f"Total Correlation between Co-Cluster Score and Mean Distance: {correlation:.2f}")
 
 
 ### Separate votes by country # most impurtant votes?
