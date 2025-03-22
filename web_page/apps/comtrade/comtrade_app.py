@@ -46,8 +46,7 @@ def process_data(file_path, network_type, year):
 
     return G, pos
 
-import itertools
-import collections
+
 import networkx as nx
 import pandas as pd
 import numpy as np
