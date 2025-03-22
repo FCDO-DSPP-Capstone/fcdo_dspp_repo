@@ -9,10 +9,13 @@ body {
 	/* we want a white page, that's centered and not too wide */
 	background-color: #fff;
 	margin:0 auto;
-	max-width: 800px;
 	padding-top: 60px;
   }
+.wrapper{
+	max-width: 800px;
+	margin: auto;
 
+}
 /* Format my paragraph */
 p {
 	font-family: "Catamaran", sans-serif ;
@@ -31,7 +34,7 @@ h1 {
 	margin: 0px 0px 30px 0px;
 }
 section:nth-child(even){
-	background-color: #e7e7e7;
+	background-color: #f2f2f2;
 }
 a{
 	transition: all 0.3s ease;
