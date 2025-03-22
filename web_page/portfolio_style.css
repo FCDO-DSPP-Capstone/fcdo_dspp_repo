@@ -1,8 +1,9 @@
 
-@import url('https://fonts.googleapis.com/css2?family=Catamaran:wght@900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
 
 body {
-	font-family: 'Catamaran', sans-serif;
+	font-family: 'Roboto', sans-serif;
 	font-size: 16px;
 	color: #333;
 	line-height: 1.6;
@@ -25,7 +26,7 @@ body {
 }
 /* Format my paragraph */
 p {
-	font-family: "Catamaran", sans-serif ;
+	font-family: "Roboto", sans-serif ;
 	font-size: 18px;
 	margin: 5px 5px;
 	line-height: 22.4px;
@@ -34,7 +35,7 @@ p {
 
 /* Format my heading */
 h1 {
-	font-family: "Catamaran";
+	font-family: "Roboto", sans-serif;
 	font-size: 40px;
 	color: #000000;
 	font-weight: 900;
@@ -86,7 +87,7 @@ footer{
 footer p{
 	
 	font-size: 15px;
-	font-family: sans-serif !important;
+	font-family: "Roboto", sans-serif !important;
 }
 .logo{
 	width: 175px;
