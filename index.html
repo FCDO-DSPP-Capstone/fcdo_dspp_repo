@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" type="text/css" href="web_page/portfolio_style.css">
+    <link rel="stylesheet" type="text/css" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <title>FCDO DSPP capstone landing page</title>
@@ -20,7 +20,7 @@
         <h1 class="big" style="margin-bottom: 1px;"> 
             Data Science Analysis for the International Tech Department of the FCDO
         </h1>
-        <p style="text-align: center; margin-bottom: 10px; color: darkblue">
+        <p style="text-align: center; margin-bottom: 10px; color: rgb(0, 0, 0)">
             <a href="https://www.linkedin.com/in/williamgrantbenton/"><i class="fa-brands fa-linkedin"></i>Grant Benton</a> &nbsp;&nbsp;&nbsp; | &nbsp;&nbsp;&nbsp;
             <a href="https://www.linkedin.com/in/juan-piquer-21263b122/"><i class="fa-brands fa-linkedin"></i>Juan I. Piquer</a> &nbsp;&nbsp;&nbsp; | &nbsp;&nbsp;&nbsp;
             <a href="https://www.linkedin.com/in/caitlin-amy-russell/"><i class="fa-brands fa-linkedin"></i>Caitlin Russell</a> &nbsp;&nbsp;&nbsp; | &nbsp;&nbsp;&nbsp; 
@@ -35,31 +35,61 @@
 <!-- #1. Un Votes pca -->
  <section>
     <div class="wrapper">
-        <h2> 1. UN Votes in the General Assembly </h2>
-
-        <iframe src="https://01958308-7c06-030c-9fee-de5b634ff4dd.share.connect.posit.cloud"
-        width=100% height=2000 
-        style="border: none;"> </iframe>
+        <div class="title">
+            <h2> 1. UN Votes in the General Assembly </h2>
+            <i class="fa-solid fa-chevron-down"></i>
+        </div>
+        <div class="content">
+            <iframe src="https://01958308-7c06-030c-9fee-de5b634ff4dd.share.connect.posit.cloud"
+            width=100% height=2000 
+            style="border: none;"> </iframe>
+        </div>
     </div>
  </section>
  <section>
     <div class="wrapper">
-        <h2> 2. UN Opening speeches 1994-2023 </h2>
-
-        <iframe src="https://0195b09e-4708-f0af-762b-ac609ac5068a.share.connect.posit.cloud"
-        width="100%" height="1300"
-        style="border: none;"></iframe>
+        <div class="title">
+            <h2> 2. UN General Opening Speeches </h2>
+            <i class="fa-solid fa-chevron-down"></i>
+        </div>
+        <div class="content">
+            <iframe src="https://0195b09e-4708-f0af-762b-ac609ac5068a.share.connect.posit.cloud"
+            width="100%" height="1300"
+            style="border: none;"></iframe>
+        </div>
+        
     </div>
     
  </section>
 <section>
     <div class="wrapper">
-        <h2> 3.  Network of Scientific research by country </h2>
-
-        <iframe src="https://01958c02-e043-2757-558b-d56a7c563c90.share.connect.posit.cloud"
-        width=100% height=900
-        style="border: none;"
-        allowtransparency="true"></iframe>
+        <div class="title">
+            <h2> 3.  Network of Technology Research </h2>
+            <i class="fa-solid fa-chevron-down"></i>
+        </div>
+        <div class="content">
+            <iframe src="https://01958c02-e043-2757-558b-d56a7c563c90.share.connect.posit.cloud"
+            width=100% height=900
+            style="border: none;"
+            allowtransparency="true"></iframe>
+        </div>
+        
+    </div>
+    
+</section>
+<section>
+    <div class="wrapper">
+        <div class="title">
+            <h2> 4.  Network of Global Trade </h2>
+            <i class="fa-solid fa-chevron-down"></i>
+        </div>
+        <div class="content">
+            <iframe src="https://01958c02-e043-2757-558b-d56a7c563c90.share.connect.posit.cloud"
+            width=100% height=900
+            style="border: none;"
+            allowtransparency="true"></iframe>
+        </div>
+        
     </div>
     
 </section>
@@ -86,16 +116,24 @@
 
 </body>
 <script>
-    const dropdowns = document.querySelectorAll("section h2");
+    const titles = document.querySelectorAll(".title");
+    const contents = document.querySelectorAll(".content");
     const wrappers = document.querySelectorAll("section .wrapper");
-    let wrapperHeights = [];
-    wrappers.forEach((wrapper)=>{wrapperHeights.push(wrapper.offsetHeight)});
-    wrappers.forEach((wrapper)=>{wrapper.style.height = "50px"});
-    dropdowns.forEach((dropdown, index)=>{
-
-        dropdown.addEventListener("click", ()=>{
-            wrappers.forEach((wrapper)=>{wrapper.style.height = "100px"});
-            wrappers[index].style.height = `${wrapperHeights[index]}px`
+    let contentHeights = []
+    contents.forEach((content)=>{contentHeights.push(content.offsetHeight)});
+    contents.forEach((content)=>{content.style.height = "0px"});
+    titles.forEach((title, index)=>{
+        title.addEventListener("click", ()=>{
+            if(contents[index].classList.contains("active")){
+                wrappers[index].classList.remove("active");
+                contents[index].classList.remove("active");
+                contents[index].style.height = `0px`
+            }else{
+                wrappers[index].classList.add("active");
+                contents[index].classList.add("active");
+                contents[index].style.height = `${contentHeights[index]}px`
+            }
+            
         })
     })
 </script>
