@@ -61,7 +61,7 @@ footer{
 }
 footer p{
 	font-size: 15px;
-	
+	font-family: sans-serif !important;
 }
 .logo{
 	width: 175px;
