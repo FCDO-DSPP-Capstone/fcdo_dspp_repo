@@ -1,20 +1,70 @@
+def process_data(file_path, network_type, year):
+    """Load and process trade data to create a network graph."""
+    df = pd.read_csv(file_path, encoding='cp1252')
+
+    # Ensure correct column naming
+    if 'refYear' in df.columns:
+        df = df[df['refYear'] == year]
+    else:
+        raise KeyError("The dataset does not contain a 'refYear' column.")
+
+    # Create 'trade_value' column from available trade-related columns
+    df['trade_value'] = df[['cifvalue', 'fobvalue', 'primaryValue']].max(axis=1, skipna=True)
+
+    # Remove rows with missing or zero trade values
+    df = df[df['trade_value'] > 0]
+
+    # Exclude aggregate regions
+    excluded_regions = ['World', 'Other Asia, nes', 'Other Europe, nes']
+    df = df[~df['reporterISO'].isin(excluded_regions) & ~df['partnerISO'].isin(excluded_regions)]
+
+    # Apply network filtering (Full, Top 20, or Top 10)
+    if network_type in ["top_20", "top_10"]:
+        top_n = 20 if network_type == "top_20" else 10
+        total_trade = pd.concat([
+            df.groupby('reporterISO')['trade_value'].sum(),
+            df.groupby('partnerISO')['trade_value'].sum()
+        ]).groupby(level=0).sum()
+
+        # Select top N trading countries
+        top_countries = total_trade.nlargest(top_n).index.tolist()
+        df = df[df['reporterISO'].isin(top_countries) & df['partnerISO'].isin(top_countries)]
+
+    trade_edges = [(row['reporterISO'], row['partnerISO'], row['trade_value']) for _, row in df.iterrows()]
+
+    G = nx.Graph()
+    for exporter, importer, weight in trade_edges:
+        G.add_edge(exporter, importer, weight=weight)
+
+    # Handle empty graph case
+    if len(G.nodes()) == 0:
+        return G, {}
+
+    # Adjust layout calculation to avoid divide-by-zero error
+    k_value = 0.3 * (1 / np.sqrt(len(G.nodes()))) if len(G.nodes()) > 0 else 0.1
+    pos = nx.spring_layout(G, seed=42, k=k_value)
+
+    return G, pos
+
+import itertools
+import collections
 import networkx as nx
 import pandas as pd
 import numpy as np
 from dash import Dash, dcc, html, Input, Output
 import plotly.graph_objects as go
 
+
 # Initialize Dash app
 app = Dash(__name__)
 
 # File paths for datasets
 files = {
-    "Semiconductor Silicon Wafer": 'web_page/apps/comtrade/trade_data/TradeData_3_18_2025_16_45_31.csv',
-    "Semiconductor Equipment": 'web_page/apps/comtrade/trade_data/TradeData_3_18_2025_16_47_33.csv',
-    "Electronic Integrated Circuits": 'web_page/apps/comtrade/trade_data/TradeData_3_18_2025_16_48_22.csv',
-    "Electronic Computers and Components": 'web_page/apps/comtrade/trade_data/TradeData_3_18_2025_16_49_41.csv'
+    "Semiconductor Silicon Wafer": 'trade_data/TradeData_3_18_2025_16_45_31.csv',
+    "Semiconductor Equipment": 'trade_data/TradeData_3_18_2025_16_47_33.csv',
+    "Electronic Integrated Circuits": 'trade_data/TradeData_3_18_2025_16_48_22.csv',
+    "Electronic Computers and Components": 'trade_data/TradeData_3_18_2025_16_49_41.csv'
 }
-
 # Define node colors for each trade category
 category_colors = {
     "Semiconductor Silicon Wafer": "blue",
@@ -181,8 +231,3 @@ def update_graph(selected_file, selected_year, network_type, hoverData, selected
 
 if __name__ == "__main__":
     app.run_server(debug=True)
-
-
-
-
-
