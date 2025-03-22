@@ -1,22 +1,32 @@
 import requests
 import pandas as pd
+
 def fetch_openalex_data(concept_id, topic_label, start_year, end_year):
     url = "https://api.openalex.org/works"
     params = {
         'filter': f'concepts.id:{concept_id},publication_year:{start_year}-{end_year},type:article',
         'per-page': 200,
+        'sample': 10000,
+        'seed': 42,
         'mailto': 'juani.piquer@gmail.com'
     }
     
     extracted_data = []
-    cursor = "*"  #openalex api docuemntation says this will start pagination
-
-    while cursor:
-        params['cursor'] = cursor
+    
+    for page in range(1, 51):  # Iterate from page 1 to 50
+        params['page'] = page
         response = requests.get(url, params=params)
+        
+        if response.status_code != 200:
+            print(f"Error fetching data on page {page}: {response.status_code}")
+            break
+        
         data = response.json()
 
         works = data.get('results', [])
+        if not works:
+            break  # Stop if there are no more results
+
         for work in works:
             year = work.get('publication_year', None)
             title = work.get('title', 'Unknown Title')
@@ -26,14 +36,14 @@ def fetch_openalex_data(concept_id, topic_label, start_year, end_year):
 
             institutions = [auth.get('institutions', []) for auth in work.get('authorships', [])]
             
-            #institution names and countries
+            # Institution names and countries
             institution_names = set()
             institution_countries = set()
             for inst_group in institutions:
                 for inst in inst_group:
-                    if inst.get('display_name'):  #avoid NoneType errors
+                    if inst.get('display_name'):
                         institution_names.add(inst.get('display_name', 'Unknown Institution'))
-                    if inst.get('country_code'):  #again avoid NoneType errors
+                    if inst.get('country_code'):
                         institution_countries.add(inst.get('country_code', 'Unknown Country'))
             
             citation_count = work.get('cited_by_count', 0)
@@ -48,12 +58,12 @@ def fetch_openalex_data(concept_id, topic_label, start_year, end_year):
                 'Topic': topic_label
             })
         
-        cursor = data.get('meta', {}).get('next_cursor') 
+        print(f"Page {page} fetched with {len(works)} results.")
 
     return extracted_data
 
-#each topic's data
-start_year = 2010
+# Example Usage
+start_year = 2000
 end_year = 2025
 
 ai_data = fetch_openalex_data('C154945302', 'Artificial Intelligence', start_year=start_year, end_year=end_year)
