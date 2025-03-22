@@ -12,10 +12,11 @@ body {
 	padding-top: 60px;
   }
 .wrapper{
-	transition: all 0.3s ease;
+	overflow: hidden;
+	transition: all 0.7s ease;
 	max-width: 800px;
 	margin: 2rem auto ;
-	padding: 2rem;
+	padding: 1rem 2rem;
 	border-radius: 2rem;
 	box-shadow: 2px 2px 10px #e0e0e0
 }
@@ -41,7 +42,12 @@ h1 {
 	margin: 0px 0px 30px 0px;
 }
 h2{
+	transform: all 0.3s ease;
+	cursor: pointer;
 	color: #DA3838;
+}
+h2:hover{
+	font-size: 1.1em;
 }
 
 a{
