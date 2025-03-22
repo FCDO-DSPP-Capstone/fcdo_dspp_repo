@@ -56,4 +56,8 @@ i{
 footer{
 	display: flex;
 	gap: 2rem;
+	align-items: end;
+}
+.logo{
+	width: 100px;
 }
