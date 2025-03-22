@@ -54,12 +54,16 @@ i{
 	margin-right: 0.5rem;
 }
 footer{
+	justify-content: center;
+	max-width: 800px;
+	margin: auto;
 	padding: 1rem;
 	display: flex;
 	gap: 2rem;
 	align-items: end;
 }
 footer p{
+	
 	font-size: 15px;
 	font-family: sans-serif !important;
 }
