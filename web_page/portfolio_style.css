@@ -98,6 +98,9 @@ footer p{
     padding: 0 2rem;
     transition: all 0.7s ease;
 }
+.content p{
+	margin: 0;
+}
 .title i{
     transition: all 0.3s ease;
 }
