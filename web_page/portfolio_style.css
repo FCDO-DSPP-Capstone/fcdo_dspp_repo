@@ -30,7 +30,13 @@ h1 {
 	font-weight: 900;
 	margin: 0px 0px 30px 0px;
 }
-
+section:nth-child(even){
+	background-color: #e7e7e7;
+}
 a{
-	color: #7bbbc7
+	transition: all 0.3s ease;
+	color: #A3DAFA
+}
+a:hover{
+	color: #66c7ff
 }
