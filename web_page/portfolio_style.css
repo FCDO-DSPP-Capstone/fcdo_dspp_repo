@@ -54,10 +54,18 @@ i{
 	margin-right: 0.5rem;
 }
 footer{
+	padding: 1rem;
 	display: flex;
 	gap: 2rem;
 	align-items: end;
 }
+footer p{
+	font-size: 15px;
+	
+}
 .logo{
-	width: 100px;
+	width: 175px;
+}
+.logo img{
+	width: 100%;
 }
