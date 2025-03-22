@@ -85,5 +85,18 @@
 
 
 </body>
-    
+<script>
+    const dropdowns = document.querySelectorAll("section h2");
+    const wrappers = document.querySelectorAll("section .wrapper");
+    let wrapperHeights = [];
+    wrappers.forEach((wrapper)=>{wrapperHeights.push(wrapper.offsetHeight)});
+    wrappers.forEach((wrapper)=>{wrapper.style.height = "100px"});
+    dropdowns.forEach((dropdown, index)=>{
+
+        dropdown.addEventListener("click", ()=>{
+            wrappers.forEach((wrapper)=>{wrapper.style.height = "100px"});
+            wrappers[index].style.height = `${wrapperHeights[index]}px`
+        })
+    })
+</script>
 </html>

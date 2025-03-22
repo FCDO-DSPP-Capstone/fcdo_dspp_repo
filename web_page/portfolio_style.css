@@ -12,6 +12,7 @@ body {
 	padding-top: 60px;
   }
 .wrapper{
+	transition: all 0.3s ease;
 	max-width: 800px;
 	margin: 2rem auto ;
 	padding: 2rem;
