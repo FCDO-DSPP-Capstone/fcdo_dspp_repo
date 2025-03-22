@@ -18,10 +18,9 @@ body {
 	border-radius: 2rem;
 	box-shadow: 2px 2px 10px #e0e0e0
 }
-.wrapper:first-child{
-	box-shadow: none !important;
-	padding: 0 !important;
-	margin: auto !important;
+.wrapper-first{
+	max-width: 800px;
+	margin: auto ;
 }
 /* Format my paragraph */
 p {
