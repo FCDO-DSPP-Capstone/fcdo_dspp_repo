@@ -111,6 +111,7 @@ app.layout = html.Div(style={'font-family': 'Helvetica'}, children=[
     html.Br(),
     dcc.Graph(id="highlighted-graph", config={'scrollZoom': True}),
     html.H3("Trends in Technology Topics Over Time"),
+    html.Div("Use the slider to filter in/out different topic by number of mentions", style={"text-align": "left"}),
     slider,
     dcc.Graph(id="topic-trends-graph")
 ])
@@ -238,7 +239,6 @@ def update_network_graph(group_name, click_data):
         yaxis=dict(showgrid=False, showticklabels=False, ticks='', zeroline=False),
         template="plotly_white",
         font=dict(family="Helvetica", size=12),
-        paper_bgcolor='rgba(0,0,0,0)',
         plot_bgcolor='rgba(0,0,0,0)',
         xaxis_range=[-1.5, 1.5],
         yaxis_range=[-1.5, 1.5]
@@ -263,7 +263,6 @@ def update_trends_graph(max_mentions):
         color="Topic Name",
         category_orders={"Topic Name": sorted_topics},
         markers=True,
-        title="Trends in Technology Topics Over Time",
         labels={"Mentions": "Number of Mentions"},
         template="plotly_white",
         color_discrete_map=color_map
