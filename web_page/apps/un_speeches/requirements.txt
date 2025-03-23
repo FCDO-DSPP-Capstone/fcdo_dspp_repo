@@ -1,0 +1,6 @@
+networkx
+numpy
+pandas
+dash
+plotly
+scikit-learn
