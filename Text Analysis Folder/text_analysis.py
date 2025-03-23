@@ -303,56 +303,74 @@ if __name__ == '__main__':
 #### visuazlaition of topic mentions counts by year (not country)
 ####################################
 
-# Filter for only zero-shot topics (without excluding any)
-filtered_df = sentence_df[(~sentence_df["Topic Name"].str.contains("Weapons|Climate", case=False, na=False)) &
-                          (sentence_df["Topic Name"].notna())]
 
-filtered_df = sentence_df[sentence_df["Topic Name"].notna()]
+# Calculate topic trends
+topic_trends = sentence_df.groupby(["Year", "Topic Name"]).size().reset_index(name="Mentions")
 
-# Aggregate mentions per topic per year
-topic_trends = filtered_df.groupby(["Year", "Topic Name"]).size().reset_index(name="Mentions")
+# Calculate the max mentions per topic
+max_mentions_per_topic = topic_trends.groupby("Topic Name")["Mentions"].max()
 
-# Log transformation to reduce skew
-topic_trends["Log Mentions"] = np.log(topic_trends["Mentions"] + 1)
-
-# Get unique topics to create a colour mapping
-topics = topic_trends["Topic Name"].unique()
-pastel_palette = px.colors.qualitative.Pastel
-color_map = {topic: pastel_palette[i % len(pastel_palette)] for i, topic in enumerate(topics)}
-
-# Plot with Plotly
-fig = px.line(
-    topic_trends,
-    x="Year",
-    y="Log Mentions",
-    color="Topic Name",  # Each line is a topic
-    custom_data=["Mentions"],
-    hover_data=["Mentions"],
-    markers=True,
-    title="Overall Trends in Technology Topics Over Time",
-    labels={"Mentions": "Number of Mentions"},
-    template="plotly_white"
+app = dash.Dash(__name__)
+# Create a range slider for filtering the topics by max count
+slider_marks = {i: f"{i}" for i in range(0, max_mentions_per_topic.max() + 1, 50)}
+slider = dcc.RangeSlider(
+    id="max-mentions-slider",
+    marks=slider_marks,
+    min=0,
+    max=max_mentions_per_topic.max(),
+    step=1,
+    value=[0, max_mentions_per_topic.max()]
 )
 
-# Extend the x-axis range and increase tick frequency
-fig.update_layout(
-    xaxis=dict(
-        tickmode="linear",  # Ensure evenly spaced years
-        dtick=2  # Show every year on the x-axis
-    ),
-    showlegend=True
-)
+# Create the app layout
+app.layout = html.Div([
+    html.H1("Trends in Technology Topics Over Time"),
+    slider,
+    dcc.Graph(id="topic-trends-graph")
+])
 
-# Apply pastel colours manually
-for trace in fig.data:
-    trace.line.color = color_map[trace.name]  # Match topic name to pastel colour
+# Define the callback function
+@app.callback(
+    Output("topic-trends-graph", "figure"),
+    Input("max-mentions-slider", "value"))
+def update_graph(max_mentions):
+    # Filter based on slider input
+    filtered_df = topic_trends[topic_trends["Topic Name"].isin(max_mentions_per_topic[max_mentions_per_topic <= max_mentions[1]].index)]
 
-fig.show()
+    # Sort topics
+    sorted_topics = filtered_df.groupby("Topic Name")["Mentions"].max().sort_values(ascending=False).index
 
+    # Define colors using Plotly's color palette
+    pastel_palette = px.colors.qualitative.Pastel
+    color_map = {topic: pastel_palette[i % len(pastel_palette)] for i, topic in enumerate(sorted_topics)}
 
+    # Plot using filtered data
+    fig = px.line(
+        filtered_df,
+        x="Year",
+        y="Mentions",
+        color="Topic Name",
+        category_orders={"Topic Name": sorted_topics},
+        markers=True,
+        title="Trends in Technology Topics Over Time",
+        labels={"Mentions": "Number of Mentions"},
+        template="plotly_white",
+        color_discrete_map=color_map
+    )
+
+    fig.update_layout(
+        xaxis=dict(tickmode="linear", dtick=1),
+        showlegend=True,
+        font=dict(family="Helvetica")
+    )
+
+    return fig
+
+# Run the app
+if __name__ == '__main__':
+    app.run(debug=True)
 
 ############################################
 #### visuazlaition 3:
 #### Viz of countries cisne similarity embeddings 
 ####################################
-
