@@ -251,7 +251,7 @@ def update_network_graph(group_name, click_data):
     Output("topic-trends-graph", "figure"),
     Input("max-mentions-slider", "value"))
 def update_trends_graph(max_mentions):
-    filtered_df = topic_trends[topic_trends["Topic Name"].isin(max_mentions_per_topic[max_mentions_per_topic <= max_mentions[1]].index)]
+    filtered_df = topic_trends[topic_trends["Topic Name"].isin(max_mentions_per_topic[(max_mentions_per_topic >= max_mentions[0]) & (max_mentions_per_topic <= max_mentions[1])].index)]
     sorted_topics = filtered_df.groupby("Topic Name")["Mentions"].max().sort_values(ascending=False).index
     pastel_palette = px.colors.qualitative.Pastel
     color_map = {topic: pastel_palette[i % len(pastel_palette)] for i, topic in enumerate(sorted_topics)}
