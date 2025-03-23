@@ -22,17 +22,14 @@ from dash import dcc, html, Input, Output
 
 ## 1. import csv 
 
-sentence_df = pd.read_csv("Text Analysis Folder/testing_final/sentence_df.csv")
+sentence_df = pd.read_csv("Text Analysis Folder/testing_final/tech_topcis_df.csv")
 
 print(sentence_df["Year"].unique())
 
 ###
 # grafico networks 
 
-zeroshot_df = sentence_df[sentence_df["Topic Name"].notna()]
-
-zeroshot_df = zeroshot_df[zeroshot_df["Topic Name"] != "Nuclear Weapons"]
-zeroshot_df = zeroshot_df[zeroshot_df["Topic Name"] != "Climate Change and Renewable Energy"]
+network_df = sentence_df[~((sentence_df["Topic Name"] == "Nuclear Weapons") | (sentence_df["Topic Name"] == "Climate Change and Renewable Energy"))]
 
 # Define the groups
 groups = {
@@ -70,7 +67,7 @@ always_include = ["United Kingdom", "United States", "China"]
 
 # Function to create a filtered DataFrame for each group
 def filter_by_group(group_name):
-    return zeroshot_df[zeroshot_df["Country Name"].isin(groups[group_name] + always_include)]
+    return network_df[network_df["Country Name"].isin(groups[group_name] + always_include)]
 
 # Creating separate DataFrames for each subgroup
 ASEAN_df = filter_by_group("ASEAN")
