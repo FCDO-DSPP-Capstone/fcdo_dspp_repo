@@ -1,4 +1,3 @@
-collections
 networkx
 pandas
 numpy
