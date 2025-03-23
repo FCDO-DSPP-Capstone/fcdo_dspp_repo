@@ -10,7 +10,7 @@ import pycountry
 from sentence_transformers import SentenceTransformer
 
 
-## 1. Creating CSV
+## 1. Creating speeches CSV
 ## Each speech is splitted into Sentences. Each sentence is processed then as a separate object,
 ## with a country and year label, and a topic labels to be asigned by Transformer models.
 
@@ -121,9 +121,6 @@ embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
 sentence_docs = sentence_df["Sentence"].tolist()
 # Generate embeddings for the sentences
 sentence_embeddings = embedding_model.encode(sentence_docs, show_progress_bar=True)
-# add the embeddings as column in the sentence_df
-sentence_df['Embedding'] = [embedding for embedding in sentence_embeddings]
-
 
 ### Fit BERTopic model 
 # define zero shot BERTopic model 
@@ -145,19 +142,20 @@ sentence_df['Topic'] = topics
 # Map the numeric topics to their descriptive labels in the dataframe
 sentence_df["Topic Name"] = sentence_df["Topic"].map(zeroshot_topic_dict)
 
-# Verify data frame
-sentence_df.head()
-# View count of sentences in each topic
-print(sentence_df["Topic Name"].value_counts())
+# Filter data to left only labeled sentences 
+tech_topcis_df = sentence_df[sentence_df["Topic Name"].notna()].copy()
+
+# Filter embeddings to left only the ones from labeled sentences
+tech_embeddings = sentence_embeddings[tech_topcis_df.index]
 
 # clean up environment
-del embedding_model, topic_model, sentence_docs, sentence_embeddings, topics, zeroshot_topic_dict, _
-
-sentence_df.to_csv('Text Analysis Folder/testing_final/sentence_df.csv', index=False)
-
-# create a lighter version of sentence_df, dropping the embeddings
-sentence_df_light = sentence_df.drop('Embedding', axis=1)
-sentence_df_light.to_csv('Text Analysis Folder/testing_final/sentence_df_light.csv', index=False)
+del sentence_df, embedding_model, topic_model, sentence_docs, sentence_embeddings, topics, zeroshot_topic_dict, _
 
 
+#############################################################################
+############# 3.  export filtered embeddings and data frame 
+#############################################################################
 
+np.save('Text Analysis Folder/testing_final/tech_embeddings.npy', tech_embeddings)
+
+tech_topcis_df.to_csv('Text Analysis Folder/testing_final/tech_topcis_df.csv', index=False)

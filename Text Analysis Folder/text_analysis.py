@@ -301,6 +301,61 @@ if __name__ == '__main__':
     app.run_server(debug=True)
 
 
+############################################
+#### visuazlaition 2:
+#### visuazlaition of topic mentions counts by year (not country)
+####################################
 
-#### visuazlaition two
+# Filter for only zero-shot topics (without excluding any)
+filtered_df = sentence_df[(~sentence_df["Topic Name"].str.contains("Weapons|Climate", case=False, na=False)) &
+                          (sentence_df["Topic Name"].notna())]
+
+filtered_df = sentence_df[sentence_df["Topic Name"].notna()]
+
+# Aggregate mentions per topic per year
+topic_trends = filtered_df.groupby(["Year", "Topic Name"]).size().reset_index(name="Mentions")
+
+# Log transformation to reduce skew
+topic_trends["Log Mentions"] = np.log(topic_trends["Mentions"] + 1)
+
+# Get unique topics to create a colour mapping
+topics = topic_trends["Topic Name"].unique()
+pastel_palette = px.colors.qualitative.Pastel
+color_map = {topic: pastel_palette[i % len(pastel_palette)] for i, topic in enumerate(topics)}
+
+# Plot with Plotly
+fig = px.line(
+    topic_trends,
+    x="Year",
+    y="Log Mentions",
+    color="Topic Name",  # Each line is a topic
+    custom_data=["Mentions"],
+    hover_data=["Mentions"],
+    markers=True,
+    title="Overall Trends in Technology Topics Over Time",
+    labels={"Mentions": "Number of Mentions"},
+    template="plotly_white"
+)
+
+# Extend the x-axis range and increase tick frequency
+fig.update_layout(
+    xaxis=dict(
+        tickmode="linear",  # Ensure evenly spaced years
+        dtick=2  # Show every year on the x-axis
+    ),
+    showlegend=True
+)
+
+# Apply pastel colours manually
+for trace in fig.data:
+    trace.line.color = color_map[trace.name]  # Match topic name to pastel colour
+
+fig.show()
+
+
+
+############################################
+#### visuazlaition 3:
+#### Viz of countries cisne similarity embeddings 
+####################################
 
