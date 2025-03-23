@@ -1,52 +1,3 @@
-def process_data(file_path, network_type, year):
-    """Load and process trade data to create a network graph."""
-    df = pd.read_csv(file_path, encoding='cp1252')
-
-    # Ensure correct column naming
-    if 'refYear' in df.columns:
-        df = df[df['refYear'] == year]
-    else:
-        raise KeyError("The dataset does not contain a 'refYear' column.")
-
-    # Create 'trade_value' column from available trade-related columns
-    df['trade_value'] = df[['cifvalue', 'fobvalue', 'primaryValue']].max(axis=1, skipna=True)
-
-    # Remove rows with missing or zero trade values
-    df = df[df['trade_value'] > 0]
-
-    # Exclude aggregate regions
-    excluded_regions = ['World', 'Other Asia, nes', 'Other Europe, nes']
-    df = df[~df['reporterISO'].isin(excluded_regions) & ~df['partnerISO'].isin(excluded_regions)]
-
-    # Apply network filtering (Full, Top 20, or Top 10)
-    if network_type in ["top_20", "top_10"]:
-        top_n = 20 if network_type == "top_20" else 10
-        total_trade = pd.concat([
-            df.groupby('reporterISO')['trade_value'].sum(),
-            df.groupby('partnerISO')['trade_value'].sum()
-        ]).groupby(level=0).sum()
-
-        # Select top N trading countries
-        top_countries = total_trade.nlargest(top_n).index.tolist()
-        df = df[df['reporterISO'].isin(top_countries) & df['partnerISO'].isin(top_countries)]
-
-    trade_edges = [(row['reporterISO'], row['partnerISO'], row['trade_value']) for _, row in df.iterrows()]
-
-    G = nx.Graph()
-    for exporter, importer, weight in trade_edges:
-        G.add_edge(exporter, importer, weight=weight)
-
-    # Handle empty graph case
-    if len(G.nodes()) == 0:
-        return G, {}
-
-    # Adjust layout calculation to avoid divide-by-zero error
-    k_value = 0.3 * (1 / np.sqrt(len(G.nodes()))) if len(G.nodes()) > 0 else 0.1
-    pos = nx.spring_layout(G, seed=42, k=k_value)
-
-    return G, pos
-
-
 import networkx as nx
 import pandas as pd
 import numpy as np
@@ -74,10 +25,11 @@ category_colors = {
 
 # Layout
 app.layout = html.Div([
-    html.H1("Global Trade Network"),
+    html.H3("Global Trade Network", style={'font-family': 'Helvetica'}),
 
     dcc.Dropdown(
         id="commodity-dropdown",
+        style={'font-family': 'Helvetica'},
         options=[{"label": k, "value": v} for k, v in files.items()],
         value=list(files.values())[0],
         clearable=False
@@ -92,21 +44,14 @@ app.layout = html.Div([
             
         ],
         value="full",
-        labelStyle={'display': 'inline-block', 'margin-right': '10px'}
+        labelStyle={'display': 'inline-block', 'margin-right': '10px', 'font-family': 'Helvetica'}
     ),
-
     dcc.Dropdown(
         id="year-dropdown",
+        style={'font-family': 'Helvetica'},
         options=[{"label": str(y), "value": y} for y in [2010, 2020, 2023, 2024]],
         value=2024,
         clearable=False
-    ),
-
-    dcc.Dropdown(
-        id="label-selection",
-        options=[],
-        multi=True,
-        placeholder="Select countries to display labels"
     ),
 
     html.Div([
@@ -121,17 +66,13 @@ app.layout = html.Div([
 @app.callback(
     [Output("network-graph", "figure"),
      Output("hovered-country-name", "children"),
-     Output("hovered-country-pairings", "children"),
-     Output("label-selection", "options")],
+     Output("hovered-country-pairings", "children")],
     [Input("commodity-dropdown", "value"),
      Input("year-dropdown", "value"),
      Input("network-type", "value"),
-     Input("network-graph", "hoverData"),
-     Input("label-selection", "value")]
+     Input("network-graph", "hoverData")]
 )
-def update_graph(selected_file, selected_year, network_type, hoverData, selected_labels):
-    if selected_labels is None:
-        selected_labels = []
+def update_graph(selected_file, selected_year, network_type, hoverData):
 
     # Load the data
     df = pd.read_csv(selected_file, encoding='cp1252')
@@ -187,8 +128,6 @@ def update_graph(selected_file, selected_year, network_type, hoverData, selected
     k_value = 0.3 * (1 / np.sqrt(len(G.nodes()))) if len(G.nodes()) > 0 else 0.1
     pos = nx.spring_layout(G, seed=42, k=k_value)
 
-    # Create dropdown options for country selection
-    country_options = [{"label": country, "value": country} for country in G.nodes()]
 
     # Get hovered country
     hovered_node = None
@@ -220,13 +159,15 @@ def update_graph(selected_file, selected_year, network_type, hoverData, selected
         edge_x.extend([x0, x1, None])
         edge_y.extend([y0, y1, None])
 
-    fig = go.Figure()
-    fig.add_trace(go.Scatter(x=edge_x, y=edge_y, mode="lines", line=dict(width=0.5, color="gray"), hoverinfo="none"))
-    fig.add_trace(go.Scatter(x=[pos[node][0] for node in G.nodes()], y=[pos[node][1] for node in G.nodes()],
-                             mode="markers", marker=dict(size=10, color=node_color),
-                             text=hover_texts, hoverinfo="text"))
-
-    return fig, hovered_country_label, hovered_pairings if hovered_pairings else [html.Li("None")], country_options
+    fig = go.Figure(data=[go.Scatter(x=edge_x, y=edge_y, mode="lines", line=dict(width=0.5, color="gray"), hoverinfo="none"),
+                           go.Scatter(x=[pos[node][0] for node in G.nodes()], y=[pos[node][1] for node in G.nodes()],
+                                     mode="markers", marker=dict(size=10, color=node_color, opacity=0.8),
+                                     text=hover_texts, hoverinfo="text")],
+                    layout=go.Layout(template="plotly_white",
+                                     xaxis=dict(showticklabels=False, ticks="", showgrid=True),
+                                     yaxis=dict(showticklabels=False, ticks="", showgrid=True))
+                    )
+    return fig, hovered_country_label, hovered_pairings if hovered_pairings else [html.Li("None")]
 
 if __name__ == "__main__":
     app.run_server(debug=True)
