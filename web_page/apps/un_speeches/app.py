@@ -10,7 +10,7 @@ import dash
 from dash import dcc, html, Input, Output
 
 # Import CSV
-sentence_df = pd.read_csv("web_page/apps/un_speeches/tech_topcis_df.csv")
+sentence_df = pd.read_csv("tech_topcis_df.csv")
 network_df = sentence_df[~((sentence_df["Topic Name"] == "Nuclear Weapons") | (sentence_df["Topic Name"] == "Climate Change and Renewable Energy"))]
 
 # Define groups
