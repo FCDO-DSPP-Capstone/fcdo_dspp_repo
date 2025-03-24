@@ -244,9 +244,7 @@ def update_network_graph(group_name, click_data):
         yaxis=dict(showgrid=False, showticklabels=False, ticks='', zeroline=False),
         template="plotly_white",
         font=dict(family="Helvetica", size=12),
-        plot_bgcolor='rgba(0,0,0,0)',
-        xaxis_range=[-1.5, 1.5],
-        yaxis_range=[-1.5, 1.5]
+        plot_bgcolor='rgba(0,0,0,0)'
     )
 
     return main_fig, highlighted_fig
