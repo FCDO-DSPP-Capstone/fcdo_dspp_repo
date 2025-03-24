@@ -1,5 +1,5 @@
 networkx
-pandas
 numpy
-dash
-plotly
+pandas
+dash==2.18.2
+plotly==5.3.1
