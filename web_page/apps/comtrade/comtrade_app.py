@@ -55,7 +55,7 @@ app.layout = html.Div([
     ),
 
     html.Div([
-        dcc.Graph(id="network-graph", clear_on_unhover=True, config={'scrollZoom': True}, style={'flex': '1'}),
+        dcc.Graph(id="network-graph", clear_on_unhover=True, config={'scrollZoom': True}, style={'flex': '1', 'height': '600px'}),
         html.Div(id="hovered-country-pairings-container", children=[
             html.H3(id="hovered-country-name", children="Top 3 Trade Partners"),
             html.Ul(id="hovered-country-pairings")
