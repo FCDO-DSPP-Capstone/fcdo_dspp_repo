@@ -3,13 +3,13 @@ import itertools
 import networkx as nx
 import numpy as np
 import pandas as pd
-from dash import Dash, dcc, html, Input, Output
+from dash import Dash, dcc, html, Input, Output, State
 import plotly.graph_objects as go
 from iso3166 import countries_by_alpha2
 
 df = pd.read_csv("openalex_combined_dataset.csv")
 
-#UK's official name is too long. Need to shorten
+# UK's official name is too long. Need to shorten
 country_name_overrides = {
     "GB": "United Kingdom"
 }
@@ -17,7 +17,7 @@ country_name_overrides = {
 # dash app
 app = Dash(__name__)
 
-#layout. years and topic filter
+# layout. years and topic filter
 app.layout = html.Div([
     html.H3("Country Collaboration Network", style={'font-family': 'Helvetica'}),
     dcc.Dropdown(
@@ -37,7 +37,7 @@ app.layout = html.Div([
         max=2025,
         step=1,
         value=[2000, 2025],
-        marks={year: {'label': str(year), 'style': {'font-family': 'Helvetica', 'writing-mode': 'vertical-lr'}} for year in range(2000, 2026, 1)},        
+        marks={year: {'label': str(year), 'style': {'font-family': 'Helvetica', 'writing-mode': 'vertical-lr'}} for year in range(2000, 2026, 1)},
     ),
     
     html.Div(style={'height': '12px'}),
@@ -45,10 +45,8 @@ app.layout = html.Div([
     dcc.Dropdown(
         id="label-selection",
         options=[],
-        multi=True,
-        placeholder="Select countries to display labels",
+        placeholder="Select Country to highlight",
         style={'font-family': 'Helvetica'}
-
     ),
     html.Div([
         dcc.Graph(id="country-network-graph", clear_on_unhover=True, 
@@ -67,10 +65,7 @@ app.layout = html.Div([
      Output("label-selection", "options")],
     [Input("topic-filter", "value"), Input("year-slider", "value"), Input("country-network-graph", "hoverData"), Input("label-selection", "value")]
 )
-def update_graph(selected_topic, selected_years, hoverData, selected_labels):
-    
-    if selected_labels is None:
-        selected_labels = []
+def update_graph(selected_topic, selected_years, hoverData, selected_label):
     
     filtered_df = df[(df['Topic'] == selected_topic) & (df['Year'] >= selected_years[0]) & (df['Year'] <= selected_years[1])]
     
@@ -100,18 +95,18 @@ def update_graph(selected_topic, selected_years, hoverData, selected_labels):
         if 'text' in first_point:
             hovered_node = first_point['text'].split('<br>')[0]
     
-    highlighted_nodes = set(selected_labels)
+    highlighted_nodes = set([selected_label]) if selected_label else set()
     highlighted_edges = set()
     if hovered_node:
         highlighted_nodes.add(hovered_node)
         highlighted_nodes.update([neighbor for neighbor in G.neighbors(hovered_node)])
-    for selected_node in selected_labels:
-        highlighted_nodes.update([neighbor for neighbor in G.neighbors(selected_node)])
-        highlighted_edges.update([(selected_node, neighbor) for neighbor in G.neighbors(selected_node)])
+    if selected_label:
+        highlighted_nodes.update([neighbor for neighbor in G.neighbors(selected_label)])
+        highlighted_edges.update([(selected_label, neighbor) for neighbor in G.neighbors(selected_label)])
     
     hovered_pairings = []
     hovered_country_label = "Top 3 Collaborators"
-    selected_country = hovered_node if hovered_node else (selected_labels[0] if selected_labels else None)
+    selected_country = hovered_node if hovered_node else selected_label
     if selected_country:
         hovered_country_label = f"Top 3 Collaborators for {selected_country}"
         
@@ -140,8 +135,8 @@ def update_graph(selected_topic, selected_years, hoverData, selected_labels):
         node_y.append(y)
         node_size.append((G.degree(node) / max(1, max(dict(G.degree()).values()))) * 30 + 10)
         node_text.append(f"{node}<br><b>Unique Country Pairings:</b> {G.degree(node)}")
-        node_labels.append(node if node in selected_labels or node == hovered_node else "")
-        node_colors.append("green" if node in selected_labels else ("red" if node in highlighted_nodes else "blue"))
+        node_labels.append(node if node == selected_label or node == hovered_node else "")
+        node_colors.append("green" if node == selected_label else ("red" if node in highlighted_nodes else "blue"))
     
     fig = go.Figure()
     fig.add_trace(go.Scatter(
@@ -159,9 +154,13 @@ def update_graph(selected_topic, selected_years, hoverData, selected_labels):
         name=""
     ))
     fig.update_layout(title=f"{selected_topic} Collaborations ({selected_years[0]}-{selected_years[1]})", showlegend=False, uirevision="network",
-                      font=dict(family="Helvetica", size=14), 
-                      xaxis=dict( showticklabels=False),
-                      yaxis=dict(showticklabels=False))
+                      xaxis=dict(showgrid=False, showticklabels=False, ticks='', zeroline=False), 
+                      yaxis=dict(showgrid=False, showticklabels=False, ticks='', zeroline=False), 
+                      template="plotly_white", 
+                      font=dict(family="Helvetica", size=12), 
+                      plot_bgcolor='rgba(0,0,0,0)')
+                      
+                      
     return fig, hovered_country_label, hovered_pairings if hovered_pairings else [html.Li("None")], country_options
 
 if __name__ == "__main__":
