@@ -55,18 +55,12 @@ app.layout = html.Div([
     ),
 
     html.Div([
-        dcc.Graph(id="network-graph", clear_on_unhover=True, config={'scrollZoom': True}, style={'flex': '1'}),
-        html.Div(id="hovered-country-pairings-container", children=[
-            html.H3(id="hovered-country-name", children="Top 3 Trade Partners"),
-            html.Ul(id="hovered-country-pairings")
-        ], style={'position': 'absolute', 'top': '10px', 'right': '10px', 'background-color': 'white', 'padding': '10px', 'border': '1px solid black', 'z-index': '10'})
+        dcc.Graph(id="network-graph", clear_on_unhover=True, config={'scrollZoom': True}, style={'flex': '1'})
     ], style={'display': 'flex', 'position': 'relative'})
 ])
 
 @app.callback(
-    [Output("network-graph", "figure"),
-     Output("hovered-country-name", "children"),
-     Output("hovered-country-pairings", "children")],
+    Output("network-graph", "figure"),
     [Input("commodity-dropdown", "value"),
      Input("year-dropdown", "value"),
      Input("network-type", "value"),
@@ -122,34 +116,17 @@ def update_graph(selected_file, selected_year, network_type, hoverData):
 
     # Handle empty graph case
     if len(G.nodes()) == 0:
-        return go.Figure(), "Top 3 Trade Partners", [html.Li("None")], []
+        return go.Figure()
 
     # Position nodes using the spring layout
     k_value = 0.3 * (1 / np.sqrt(len(G.nodes()))) if len(G.nodes()) > 0 else 0.1
     pos = nx.spring_layout(G, seed=42, k=k_value)
-
 
     # Get hovered country
     hovered_node = None
     if hoverData and "points" in hoverData and hoverData["points"]:
         if "text" in hoverData["points"][0]:
             hovered_node = hoverData["points"][0]["text"].split(": ")[-1]
-
-    # Find top 3 trade partners
-    hovered_pairings = []
-    hovered_country_label = "Top 3 Trade Partners"
-    hover_texts = []
-    for node in G.nodes():
-        trade_partners = sorted(G[node].items(), key=lambda x: x[1]['weight'], reverse=True)
-        top_partners = [partner[0] for partner in trade_partners[:3]]
-        total_partners = len(G[node])  # Count total trade partners
-        partner_text = ", ".join(top_partners) if top_partners else "None"
-
-        hover_texts.append(f"Country: {node}<br>Total Trade Partners: {total_partners}<br>Top 3 Trade Partners: {partner_text}")
-
-        if node == hovered_node:
-            hovered_country_label = f"Top 3 Trade Partners for {hovered_node}"
-            hovered_pairings = [html.Li(f"{p}") for p in top_partners]
 
     # Prepare graph elements
     edge_x, edge_y = [], []
@@ -158,16 +135,16 @@ def update_graph(selected_file, selected_year, network_type, hoverData):
         x1, y1 = pos[edge[1]]
         edge_x.extend([x0, x1, None])
         edge_y.extend([y0, y1, None])
-
-    fig = go.Figure(data=[go.Scatter(x=edge_x, y=edge_y, mode="lines", line=dict(width=0.5, color="gray"), hoverinfo="none"),
+    fig = go.Figure(data=[go.Scatter(x=edge_x, y=edge_y, mode="lines", line=dict(width=0.5, color="gray"), hoverinfo="none", showlegend=False),
                            go.Scatter(x=[pos[node][0] for node in G.nodes()], y=[pos[node][1] for node in G.nodes()],
                                      mode="markers", marker=dict(size=10, color=node_color, opacity=0.8),
-                                     text=hover_texts, hoverinfo="text")],
+                                     text=[f"Country: {node}" for node in G.nodes()], hoverinfo="text", showlegend=False, hoverlabel=dict(bgcolor='rgba(0,0,0,0)'))],
                     layout=go.Layout(template="plotly_white",
-                                     xaxis=dict(showticklabels=False, ticks="", showgrid=True),
-                                     yaxis=dict(showticklabels=False, ticks="", showgrid=True))
+                                     xaxis=dict(showticklabels=False, ticks="", showgrid=False, zeroline=False),
+                                     yaxis=dict(showticklabels=False, ticks="", showgrid=False, zeroline=False),
+                                     plot_bgcolor="rgba(0,0,0,0)")
                     )
-    return fig, hovered_country_label, hovered_pairings if hovered_pairings else [html.Li("None")]
+    return fig
 
 if __name__ == "__main__":
     app.run_server(debug=True)
