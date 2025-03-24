@@ -1,7 +1,7 @@
 networkx
-numpy>=1.22
+numpy
 pandas
 dash==2.18.2
 plotly==5.3.1
-scikit-learn>=1.5.0
+scikit-learn
 
