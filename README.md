@@ -1,4 +1,4 @@
-# FCDO data capstone 
+# FCDO data science capstone 
 
 
 Web page: https://juanipiquer.github.io/fcdo_dspp_repo/
