@@ -110,9 +110,14 @@ app.layout = html.Div(style={'font-family': 'Helvetica'}, children=[
     dcc.Graph(id="network-graph", config={'scrollZoom': True}, style={'flex': '1', 'height': '550px'}),
     html.Br(),
     dcc.Graph(id="highlighted-graph", config={'scrollZoom': True}, style={'flex': '1', 'height': '450px'}),
-    html.H3("Trends in Technology Topics Over Time"),
-    html.Div("Use the slider to filter in/out different topic by number of mentions", style={"text-align": "left"}),
+   
+    html.H3("Total mentions of technology topics over time"),
+    html.Div("Mentions by all countries are aggregated. Click on legends to turn on/off topics. Double click to reset zoom.",
+     style={"text-align": "left","font-size": "14px"}),
+    html.Br(),
+    html.Div("Use the slider to filter in/out different topic by number of mentions.", style={"text-align": "left", "font-size": "14px"}),
     slider,
+    
     dcc.Graph(id="topic-trends-graph")
 ])
 
