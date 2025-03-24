@@ -139,7 +139,7 @@ def update_graph(selected_topic, selected_years, hoverData, selected_labels):
         node_x.append(x)
         node_y.append(y)
         node_size.append((G.degree(node) / max(1, max(dict(G.degree()).values()))) * 30 + 10)
-        node_text.append(f"{node}<br><b>Total Count of Collaborations:</b> {sum(d['weight'] for _, _, d in G.edges(node, data=True))}<br><b>Unique Country Pairings:</b> {G.degree(node)}")
+        node_text.append(f"{node}<br><b>Unique Country Pairings:</b> {G.degree(node)}")
         node_labels.append(node if node in selected_labels or node == hovered_node else "")
         node_colors.append("green" if node in selected_labels else ("red" if node in highlighted_nodes else "blue"))
     
