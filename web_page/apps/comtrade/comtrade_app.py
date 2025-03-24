@@ -4,7 +4,6 @@ import numpy as np
 from dash import Dash, dcc, html, Input, Output
 import plotly.graph_objects as go
 
-
 # Initialize Dash app
 app = Dash(__name__)
 
@@ -15,6 +14,7 @@ files = {
     "Electronic Integrated Circuits": 'trade_data/TradeData_3_18_2025_16_48_22.csv',
     "Electronic Computers and Components": 'trade_data/TradeData_3_18_2025_16_49_41.csv'
 }
+
 # Define node colors for each trade category
 category_colors = {
     "Semiconductor Silicon Wafer": "blue",
@@ -41,7 +41,6 @@ app.layout = html.Div([
             {"label": "Full Network", "value": "full"},
             {"label": "Top 20", "value": "top_20"},
             {"label": "Top 10", "value": "top_10"},
-            
         ],
         value="full",
         labelStyle={'display': 'inline-block', 'margin-right': '10px', 'font-family': 'Helvetica'}
@@ -54,9 +53,7 @@ app.layout = html.Div([
         clearable=False
     ),
 
-    html.Div([
-        dcc.Graph(id="network-graph", clear_on_unhover=True, config={'scrollZoom': True}, style={'flex': '1', 'height': '550px'}),
-    ], style={'display': 'flex', 'position': 'relative'})
+    dcc.Graph(id="network-graph", clear_on_unhover=True, config={'scrollZoom': True}, style={'flex': '1'})
 ])
 
 @app.callback(
@@ -73,77 +70,72 @@ def update_graph(selected_file, selected_year, network_type, hoverData):
 
     # Extract the selected category and assign colors
     category_name = [key for key, value in files.items() if value == selected_file][0]
-    node_color = category_colors.get(category_name, "gray")  # Default to gray if not found
+    node_color = category_colors.get(category_name, "gray")
 
-    # Ensure 'refPeriodId' exists and extract the year
-    if 'refPeriodId' not in df.columns:
-        raise KeyError("The dataset does not contain a 'refPeriodId' column.")
-
-    df['Year'] = df['refPeriodId']  # Use this for filtering
-
-    # Filter data by the selected year
+    df['Year'] = df['refPeriodId']
     df = df[df['Year'] == selected_year]
 
     # Create 'trade_value' column
     df['trade_value'] = df[['cifvalue', 'fobvalue', 'primaryValue']].max(axis=1, skipna=True)
-
-    # Remove rows with missing or zero trade values
     df = df[df['trade_value'] > 0]
 
-    # Apply network filtering
-    if network_type == "imports":
-        df = df[df['flowDesc'] == "Import"]
-    elif network_type == "exports":
-        df = df[df['flowDesc'] == "Export"]
-    elif network_type in ["top_20", "top_10"]:
+    # Filter network based on user selection
+    if network_type in ["top_20", "top_10"]:
         top_n = 20 if network_type == "top_20" else 10
         total_trade = df.groupby('reporterISO')['trade_value'].sum() + df.groupby('partnerISO')['trade_value'].sum()
         top_countries = total_trade.nlargest(top_n).index.tolist()
         df = df[df['reporterISO'].isin(top_countries) & df['partnerISO'].isin(top_countries)]
 
-    # Exclude aggregate regions
-    excluded_regions = [
-        'World', 'Other Asia, nes', 'Other Europe, nes', 
-        'Other America, nes', 'Special Categories', 
-        'Unspecified', 'Areas, nes'
-    ]
+    excluded_regions = ['World', 'Other Asia, nes', 'Other Europe, nes', 'Other America, nes', 'Special Categories']
     df = df[~df['reporterISO'].isin(excluded_regions) & ~df['partnerISO'].isin(excluded_regions)]
 
-    # Construct trade network
+    # Construct graph
     G = nx.Graph()
     for _, row in df.iterrows():
         G.add_edge(row['reporterISO'], row['partnerISO'], weight=row['trade_value'])
 
-    # Handle empty graph case
     if len(G.nodes()) == 0:
         return go.Figure()
 
-    # Position nodes using the spring layout
     k_value = 0.3 * (1 / np.sqrt(len(G.nodes()))) if len(G.nodes()) > 0 else 0.1
     pos = nx.spring_layout(G, seed=42, k=k_value)
 
-    # Get hovered country
-    hovered_node = None
-    if hoverData and "points" in hoverData and hoverData["points"]:
-        if "text" in hoverData["points"][0]:
-            hovered_node = hoverData["points"][0]["text"].split(": ")[-1]
+    # Hover data processing
+    hovered_node = hoverData['points'][0]['text'].split(': ')[-1] if hoverData and hoverData['points'] else None
 
-    # Prepare graph elements
+    hover_texts = []
+    for node in G.nodes():
+        trade_partners = sorted(G[node].items(), key=lambda x: x[1]['weight'], reverse=True)
+        top_partners = [partner[0] for partner in trade_partners[:3]]
+        total_partners = len(G[node])
+        partner_text = ", ".join(top_partners) if top_partners else "None"
+        hover_texts.append(f"Country: {node}<br>Total Trade Partners: {total_partners}<br>Top 3 Trade Partners: {partner_text}")
+
     edge_x, edge_y = [], []
     for edge in G.edges():
         x0, y0 = pos[edge[0]]
         x1, y1 = pos[edge[1]]
         edge_x.extend([x0, x1, None])
         edge_y.extend([y0, y1, None])
-    fig = go.Figure(data=[go.Scatter(x=edge_x, y=edge_y, mode="lines", line=dict(width=0.5, color="gray"), hoverinfo="none", showlegend=False),
-                           go.Scatter(x=[pos[node][0] for node in G.nodes()], y=[pos[node][1] for node in G.nodes()],
-                                     mode="markers", marker=dict(size=10, color=node_color, opacity=0.8),
-                                     text=[f"Country: {node}" for node in G.nodes()], hoverinfo="text", showlegend=False, hoverlabel=dict(bgcolor='rgba(0,0,0,0)'))],
-                    layout=go.Layout(template="plotly_white",
-                                     xaxis=dict(showticklabels=False, ticks="", showgrid=False, zeroline=False),
-                                     yaxis=dict(showticklabels=False, ticks="", showgrid=False, zeroline=False),
-                                     plot_bgcolor="rgba(0,0,0,0)")
-                    )
+
+    fig = go.Figure(data=[
+        go.Scatter(x=edge_x, y=edge_y, mode="lines", 
+        line=dict(width=0.5, color="gray"), hoverinfo="none", showlegend=False),
+        go.Scatter(
+            x=[pos[node][0] for node in G.nodes()],
+            y=[pos[node][1] for node in G.nodes()],
+            mode="markers",
+            marker=dict(size=10, color=node_color),
+            text=hover_texts,
+            hoverinfo="text",
+            showlegend=False
+        )
+    ])
+
+    fig.update_layout(template="plotly_white", 
+    xaxis=dict(showticklabels=False, ticks="", showgrid=False, zeroline=False),
+    yaxis=dict(showticklabels=False, ticks="", showgrid=False, zeroline=False),
+    plot_bgcolor="rgba(0,0,0,0)")
     return fig
 
 if __name__ == "__main__":
