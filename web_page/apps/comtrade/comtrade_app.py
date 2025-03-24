@@ -55,7 +55,7 @@ app.layout = html.Div([
     ),
 
     html.Div([
-        dcc.Graph(id="network-graph", clear_on_unhover=True, config={'scrollZoom': True}, style={'flex': '1'})
+        dcc.Graph(id="network-graph", clear_on_unhover=True, config={'scrollZoom': True}, style={'flex': '1', 'height': '550px'}),
     ], style={'display': 'flex', 'position': 'relative'})
 ])
 
