@@ -3,3 +3,4 @@ pandas
 numpy
 dash
 plotly
+stringcase==1.1.0
