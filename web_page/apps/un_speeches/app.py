@@ -109,7 +109,7 @@ app.layout = html.Div(style={'font-family': 'Helvetica'}, children=[
     group_selector,
     dcc.Graph(id="network-graph", config={'scrollZoom': True}, style={'flex': '1', 'height': '550px'}),
     html.Br(),
-    dcc.Graph(id="highlighted-graph", config={'scrollZoom': True}),
+    dcc.Graph(id="highlighted-graph", config={'scrollZoom': True}, style={'flex': '1', 'height': '450px'}),
     html.H3("Trends in Technology Topics Over Time"),
     html.Div("Use the slider to filter in/out different topic by number of mentions", style={"text-align": "left"}),
     slider,

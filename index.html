@@ -34,7 +34,7 @@
         </div>
         <div class="content">
             <p style="font-family: Roboto; padding: 1rem 0; font-size: 0.85rem;">
-                This graph is made using all the votes in the General Assembly of the 
+                This plot is made using all the votes in the General Assembly of the 
                 United Nations for a given year (you can select any between 1990 and 2024). 
                 Each point is a country. Countries that are closer vote together 
                 more consistently than countries that are far apart.
@@ -59,10 +59,25 @@
         </div>
         <div class="content">
             <p style="font-family: Roboto; padding: 1rem 0; font-size: 0.85rem;">
-            Analysis of the opening speeches give by each country in years 1994 to 2023.
+            This plots are made using the UN General Debate speeches. 
             Each country gives one speech per year. 
-            Each speech is split into many sentences. Then, each sentence is classified into a topi. 
-        Then, we selected only the technological related topics and make this plots. </p>
+            <br>
+            For this plots, each speech was split into many sentences. 
+            Then, each sentence is classified into a topic using Natural Language Processing techniques. 
+            Finally, we selected only those sentenced classified in a technological related topics.
+            <br><br>
+            The first plot in this section is a network graph with colored nodes representing 
+            countries and gray nodes representing topics. The width of the edges is
+             proportional to the number of times a topic was mentioned by a 
+             country, with edges colored according to the country’s color. 
+             Clicking on a node will render a second plot displaying the selected node and 
+             its connections.
+             <br>
+             You need to select a sub-set of countries from the dropdown menu. 
+             The US, the UK and China are always in the plot.
+             <br> You can zoom in the plot and double click to reset view.
+
+        </p>
             <iframe src="https://0195c49b-20fc-259a-8c2f-c26991852c15.share.connect.posit.cloud"
             width="100%" height="1850"
             style="border: none;"></iframe>
