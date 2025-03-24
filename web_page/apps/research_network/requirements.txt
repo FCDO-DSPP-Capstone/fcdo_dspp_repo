@@ -1,0 +1,6 @@
+networkx
+numpy
+pandas
+dash==2.18.2
+plotly==5.3.1
+iso3166
