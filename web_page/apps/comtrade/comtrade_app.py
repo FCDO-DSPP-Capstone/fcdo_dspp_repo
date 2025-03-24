@@ -60,10 +60,9 @@ app.layout = html.Div([
     Output("network-graph", "figure"),
     [Input("commodity-dropdown", "value"),
      Input("year-dropdown", "value"),
-     Input("network-type", "value"),
-     Input("network-graph", "hoverData")]
+     Input("network-type", "value")]
 )
-def update_graph(selected_file, selected_year, network_type, hoverData):
+def update_graph(selected_file, selected_year, network_type):
 
     # Load the data
     df = pd.read_csv(selected_file, encoding='cp1252')
@@ -99,9 +98,6 @@ def update_graph(selected_file, selected_year, network_type, hoverData):
 
     k_value = 0.3 * (1 / np.sqrt(len(G.nodes()))) if len(G.nodes()) > 0 else 0.1
     pos = nx.spring_layout(G, seed=42, k=k_value)
-
-    # Hover data processing
-    hovered_node = hoverData['points'][0]['text'].split(': ')[-1] if hoverData and hoverData['points'] else None
 
     hover_texts = []
     for node in G.nodes():
