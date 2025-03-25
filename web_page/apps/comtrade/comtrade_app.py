@@ -32,7 +32,7 @@ app.layout = html.Div([
         id="year-dropdown",
         style={'font-family': 'Helvetica'},
         options=[{"label": str(y), "value": y} for y in [2010, 2020, 2023, 2024]],
-        value=2024,
+        value=2020,
         clearable=False
     ),
 
