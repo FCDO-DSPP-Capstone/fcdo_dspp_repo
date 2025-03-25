@@ -25,9 +25,7 @@ category_colors = {
 }
 
 # Layout
-app.layout = html.Div([
-    html.H3("Global Trade Network", style={'font-family': 'Helvetica'}),
-    
+app.layout = html.Div([   
     dcc.Dropdown(
         id="commodity-dropdown",
         style={'font-family': 'Helvetica'},
