@@ -59,8 +59,12 @@ app.layout = html.Div([
     dcc.Graph(id="network-graph", clear_on_unhover=True, config={'scrollZoom': True}, style={'flex': '1'}),
     
     html.Br(),
+    html.Br(),
 
-    html.H4(id='table-title', style={'font-family': 'Helvetica', 'margin-top': '20px'}),
+
+    html.H3(id='table-title', style={'font-family': 'Helvetica', 'margin-top': '20px'}),
+    html.P("This table shows the total exports and total imports expressed in billions of US dollars for the selected year and product", style={'font-family': 'Helvetica', 'font-size': '14px'}),
+    
     
     dash_table.DataTable(
         id='trade-table',
