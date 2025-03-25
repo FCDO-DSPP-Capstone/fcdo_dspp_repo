@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 from dash import Dash, dcc, html, Input, Output
 import plotly.graph_objects as go
+import dash_table
 
 # Initialize Dash app
 app = Dash(__name__)
@@ -26,7 +27,7 @@ category_colors = {
 # Layout
 app.layout = html.Div([
     html.H3("Global Trade Network", style={'font-family': 'Helvetica'}),
-
+    
     dcc.Dropdown(
         id="commodity-dropdown",
         style={'font-family': 'Helvetica'},
@@ -34,8 +35,20 @@ app.layout = html.Div([
         value=list(files.values())[0],
         clearable=False
     ),
+    
+    html.Br(),
 
-    dcc.RadioItems(
+    dcc.Dropdown(
+        id="year-dropdown",
+        style={'font-family': 'Helvetica'},
+        options=[{"label": str(y), "value": y} for y in [2010, 2020, 2023, 2024]],
+        value=2024,
+        clearable=False
+    ),
+
+    html.Br(),
+
+        dcc.RadioItems(
         id="network-type",
         options=[
             {"label": "Full Network", "value": "full"},
@@ -45,16 +58,43 @@ app.layout = html.Div([
         value="full",
         labelStyle={'display': 'inline-block', 'margin-right': '10px', 'font-family': 'Helvetica'}
     ),
-    dcc.Dropdown(
-        id="year-dropdown",
-        style={'font-family': 'Helvetica'},
-        options=[{"label": str(y), "value": y} for y in [2010, 2020, 2023, 2024]],
-        value=2024,
-        clearable=False
-    ),
 
-    dcc.Graph(id="network-graph", clear_on_unhover=True, config={'scrollZoom': True}, style={'flex': '1'})
+    dcc.Graph(id="network-graph", clear_on_unhover=True, config={'scrollZoom': True}, style={'flex': '1'}),
+    
+    html.Br(),
+
+
+    html.H4(id='table-title', style={'font-family': 'Helvetica', 'margin-top': '20px'}),
+    
+    dash_table.DataTable(
+        id='trade-table',
+        columns=[
+            {"name": "Country", "id": "country"},
+            {"name": "Total Exports (Billions)", "id": "exports"},
+            {"name": "Total Imports (Billions)", "id": "imports"}
+
+        ],
+        fixed_rows={'headers': True, 'data': 0},
+        style_data={'whiteSpace': 'normal'},
+        style_cell={'textAlign': 'left', 'font-family': 'Helvetica', 'overflow': 'hidden', 
+        'textOverflow': 'ellipsis', 'maxWidth': 50},
+        sort_action="native", 
+        style_header={
+            'backgroundColor': 'lightgrey',
+            'fontWeight': 'bold'
+
+        }
+    )
 ])
+
+def process_data(file_path, year):
+    df = pd.read_csv(file_path, encoding='cp1252')
+    df['trade_value'] = df[['cifvalue', 'fobvalue', 'primaryValue']].max(axis=1, skipna=True)
+    df = df[df['trade_value'] > 0]
+    df = df[df['refPeriodId'] == year]
+    excluded_regions = ['World', 'Other Asia, nes', 'Other Europe, nes', 'Other America, nes', 'Special Categories']
+    df = df[~df['reporterISO'].isin(excluded_regions) & ~df['partnerISO'].isin(excluded_regions)]
+    return df
 
 @app.callback(
     Output("network-graph", "figure"),
@@ -63,20 +103,12 @@ app.layout = html.Div([
      Input("network-type", "value")]
 )
 def update_graph(selected_file, selected_year, network_type):
-
-    # Load the data
-    df = pd.read_csv(selected_file, encoding='cp1252')
-
+    # Load and process the data
+    df = process_data(selected_file, selected_year)
+    
     # Extract the selected category and assign colors
     category_name = [key for key, value in files.items() if value == selected_file][0]
     node_color = category_colors.get(category_name, "gray")
-
-    df['Year'] = df['refPeriodId']
-    df = df[df['Year'] == selected_year]
-
-    # Create 'trade_value' column
-    df['trade_value'] = df[['cifvalue', 'fobvalue', 'primaryValue']].max(axis=1, skipna=True)
-    df = df[df['trade_value'] > 0]
 
     # Filter network based on user selection
     if network_type in ["top_20", "top_10"]:
@@ -84,9 +116,6 @@ def update_graph(selected_file, selected_year, network_type):
         total_trade = df.groupby('reporterISO')['trade_value'].sum() + df.groupby('partnerISO')['trade_value'].sum()
         top_countries = total_trade.nlargest(top_n).index.tolist()
         df = df[df['reporterISO'].isin(top_countries) & df['partnerISO'].isin(top_countries)]
-
-    excluded_regions = ['World', 'Other Asia, nes', 'Other Europe, nes', 'Other America, nes', 'Special Categories']
-    df = df[~df['reporterISO'].isin(excluded_regions) & ~df['partnerISO'].isin(excluded_regions)]
 
     # Construct graph
     G = nx.Graph()
@@ -133,6 +162,42 @@ def update_graph(selected_file, selected_year, network_type):
     yaxis=dict(showticklabels=False, ticks="", showgrid=False, zeroline=False),
     plot_bgcolor="rgba(0,0,0,0)")
     return fig
+
+@app.callback(
+    Output('trade-table', 'data'),
+    [Input('commodity-dropdown', 'value'), Input('year-dropdown', 'value')]
+)
+def update_table(selected_file, year):
+    df = process_data(selected_file, year)
+    
+    # Aggregate the data for imports and exports
+    imports = (df.groupby('partnerISO')['trade_value'].sum() / 1e9).round(2).reset_index()
+    exports = (df.groupby('reporterISO')['trade_value'].sum() / 1e9).round(2).reset_index()
+
+    
+    # Merge the dataframes on country names
+    merged_df = pd.merge(imports, exports, left_on='partnerISO', right_on='reporterISO', how='outer', suffixes=('_imports', '_exports'))
+    merged_df = merged_df.fillna(0)  # Fill NaN values with 0
+    
+    # Rename columns for clarity
+    merged_df = merged_df.rename(columns={
+        'partnerISO': 'country',
+        'trade_value_imports': 'imports',
+        'trade_value_exports': 'exports'
+    })
+    
+    merged_df = merged_df.sort_values(by=['exports'], ascending=False)
+    return merged_df[['country', 'imports', 'exports']].to_dict('records')
+
+
+@app.callback(
+    Output('table-title', 'children'),
+    [Input('commodity-dropdown', 'value'), Input('year-dropdown', 'value')]
+)
+def update_table_title(selected_file, selected_year):
+    product_name = [key for key, value in files.items() if value == selected_file][0]
+    return f"Table for {product_name} in {selected_year}"
+
 
 if __name__ == "__main__":
     app.run_server(debug=True)
