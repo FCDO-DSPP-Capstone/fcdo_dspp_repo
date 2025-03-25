@@ -36,6 +36,7 @@ app.layout = html.Div([
         clearable=False
     ),
 
+
     html.Br(),
 
     dcc.RadioItems(
