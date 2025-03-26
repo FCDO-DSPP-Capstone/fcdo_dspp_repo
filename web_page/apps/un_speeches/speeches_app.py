@@ -8,10 +8,21 @@ import networkx as nx
 import plotly.colors as pc
 import dash
 from dash import dcc, html, Input, Output
+import os
+import pandas as pd
+import numpy as np
+from sklearn.metrics.pairwise import cosine_similarity
+import plotly.graph_objects as go
+import plotly.express as px
+import networkx as nx
+import plotly.colors as pc
+import dash
+from dash import dcc, html, Input, Output
 
-# Import CSV
+# Import CSVs
 sentence_df = pd.read_csv("tech_topcis_df.csv")
 network_df = sentence_df[~((sentence_df["Topic Name"] == "Nuclear Weapons") | (sentence_df["Topic Name"] == "Climate Change and Renewable Energy"))]
+similarity_df = pd.read_csv('similarity_df.csv')
 
 # Define groups
 groups = {
@@ -80,49 +91,60 @@ light24_colors = pc.qualitative.Pastel
 topic_trends = sentence_df.groupby(["Year", "Topic Name"]).size().reset_index(name="Mentions")
 max_mentions_per_topic = topic_trends.groupby("Topic Name")["Mentions"].max()
 
-# Create Dash App
+# Dash application setup
 app = dash.Dash(__name__)
 
-# Create group selector
-group_selector = dcc.Dropdown(
-    id="group-selector",
-    options=[{"label": group_name, "value": group_name} for group_name in group_dfs.keys()],
-    value=list(group_dfs.keys())[0],
-    clearable=False,
-    style={"font-family": "Helvetica"}
-)
-
-# Create a range slider for filtering the topics by max count
-slider_marks = {i: f"{i}" for i in range(0, max_mentions_per_topic.max() + 1, 50)}
-slider = dcc.RangeSlider(
-    id="max-mentions-slider",
-    marks=slider_marks,
-    min=0,
-    max=max_mentions_per_topic.max(),
-    step=1,
-    value=[0, max_mentions_per_topic.max()]
-)
-
 # App layout
-app.layout = html.Div(style={'font-family': 'Helvetica'}, children=[
-    html.H3("Countries & Technology Mentions Network", style={"text-align": "left"}),
-    group_selector,
+app.layout = html.Div([
+    html.H3("Countries & Technology Mentions Network", style={'font-family': 'Helvetica'}),
+    dcc.Dropdown(
+        id="group-selector",
+        options=[{"label": group_name, "value": group_name} for group_name in group_dfs.keys()],
+        value=list(group_dfs.keys())[0],
+        clearable=False,
+        style={"font-family": "Helvetica"}
+    ),
     dcc.Graph(id="network-graph", config={'scrollZoom': True}, style={'flex': '1', 'height': '550px'}),
     html.Br(),
     dcc.Graph(id="highlighted-graph", config={'scrollZoom': True}, style={'flex': '1', 'height': '450px'}),
-   
-    html.H3("Total mentions of technology topics over time"),
-    
+    html.H3("Total mentions of technology topics over time", style={'font-family': 'Helvetica'}),
     html.Div("Mentions by all countries are aggregated. Click on legends to turn on/off topics. Double click to select only that topic. Double click on the plot to reset zoom.",
-     style={"text-align": "left","font-size": "14px"}),
+             style={"text-align": "left","font-size": "14px", 'font-family': 'Helvetica'}),
     html.Br(),
-    html.Div("Use the slider to filter in/out different topic by number of mentions.", style={"text-align": "left", "font-size": "14px"}),
-    slider,
-    
-    dcc.Graph(id="topic-trends-graph")
+    html.Div("Use the slider to filter in/out different topic by number of mentions.", style={"text-align": "left", "font-size": "14px", 'font-family': 'Helvetica'}),
+    dcc.RangeSlider(
+        id="max-mentions-slider",
+        marks={i: f"{i}" for i in range(0, max_mentions_per_topic.max() + 1, 50)},
+        min=0,
+        max=max_mentions_per_topic.max(),
+        step=1,
+        value=[0, max_mentions_per_topic.max()]
+    ),
+    dcc.Graph(id="topic-trends-graph"),
+    html.H3("Country Speeches Similarity Analysis", style={'font-family': 'Helvetica'}),
+    html.Label("Select a Topic Group", style={'font-family': 'Helvetica'}),
+    dcc.Dropdown(
+        id='topic-group-dropdown',
+        options=[{'label': topic, 'value': topic} for topic in similarity_df['Macro Topic'].unique()],
+        style={'font-family': 'Helvetica'}
+    ),
+    html.Br(),
+    html.Label("Select a Country Group", style={'font-family': 'Helvetica'}),
+    dcc.Dropdown(
+        id='country-group-dropdown',
+        options=[{'label': group, 'value': group} for group in similarity_df['Country Group'].unique()],
+        style={'font-family': 'Helvetica'}
+    ),
+    html.Br(),
+    html.Label("Select a Reference Country", style={'font-family': 'Helvetica'}),
+    dcc.Dropdown(
+        id='reference-country-dropdown',
+        style={'font-family': 'Helvetica'}
+    ),
+    dcc.Graph(id='similarity-graph', style={'font-family': 'Helvetica'})
 ])
 
-# Callback function to update the network graph
+# Callback for updating network graph
 @app.callback(
     [Output("network-graph", "figure"),
      Output("highlighted-graph", "figure")],
@@ -250,7 +272,7 @@ def update_network_graph(group_name, click_data):
 
     return main_fig, highlighted_fig
 
-# Callback function to update the topic trends graph
+# Callback for updating topic trends graph
 @app.callback(
     Output("topic-trends-graph", "figure"),
     Input("max-mentions-slider", "value"))
@@ -278,6 +300,60 @@ def update_trends_graph(max_mentions):
         font=dict(family="Helvetica")
     )
 
+    return fig
+# Callback for updating similarity graph
+@app.callback(
+    Output('reference-country-dropdown', 'options'),
+    Input('country-group-dropdown', 'value')
+)
+def set_reference_country_options(selected_group):
+    filtered_df = similarity_df[similarity_df['Country Group'] == 'Reference']
+    reference_countries = filtered_df['Country Name'].unique()
+    options = [{'label': country, 'value': country} for country in reference_countries]
+    return options
+
+@app.callback(
+    Output('similarity-graph', 'figure'),
+    Input('topic-group-dropdown', 'value'),
+    Input('reference-country-dropdown', 'value'),
+    Input('country-group-dropdown', 'value')
+)
+def update_graph(topic_group, reference_country, country_group):
+    # Filter the DataFrame based on the selected topic group and country group
+    filtered_df = similarity_df[(similarity_df['Macro Topic'] == topic_group) & (similarity_df['Country Group'] == country_group)]
+
+    # Further filter based on the selected reference country
+    filtered_df = filtered_df[filtered_df['Reference'] == reference_country]
+
+    # Plot the results using Plotly Express
+    fig_height = 800
+    if filtered_df.empty:
+        fig = {}
+    else:
+        pastel_palette = pc.qualitative.Pastel
+        color_map = {}  # Create a mapping of countries to pastel colors
+        country_list = [country for group in groups.values() for country in group]
+        for i, country in enumerate(country_list):
+            color_map[country] = pastel_palette[i % len(pastel_palette)]
+
+        fig = px.scatter(
+            filtered_df, 
+            x='Year', 
+            y='Similarity', 
+            color='Country Name', 
+            title=f'Similarity of {country_group} against {reference_country} on {topic_group}',
+            template="plotly_white",
+            height=fig_height,
+            color_discrete_map=color_map
+        )
+        fig.update_traces(mode='lines+markers', line_shape='spline')
+        fig.update_layout(yaxis_range=[0,1], font=dict(family="Helvetica"))
+        
+        mean_similarity = filtered_df.groupby('Year')['Similarity'].mean()
+        fig.add_scatter(x=mean_similarity.index, 
+        y=mean_similarity.values, mode='lines', 
+        name='Average', 
+        line=dict(color='black', shape='spline', width=5))
     return fig
 
 # Run the app
