@@ -29,7 +29,7 @@ groups = {
     "Southern America": ["Colombia", "Ecuador", "Peru", "Bolivia", "Venezuela", "Argentina", "Chile", "Uruguay", "Paraguay"],
     "Caribbean": ["Antigua and Barbuda", "Bahamas", "Barbados", "Cuba", "Dominica", "Dominican Republic", "Grenada", "Haiti", "Jamaica", "Saint Kitts and Nevis", "Saint Lucia", "Saint Vincent and the Grenadines", "Suriname", "Trinidad and Tobago"],
     "Indian_Subcontinent": ["India", "Pakistan", "Bangladesh", "Nepal", "Sri Lanka", "Maldives", "Bhutan"],
-    "Korea_Japan_Australia_NewZealand": ["South Korea", "North Korea", "Japan", "Australia", "New Zealand"]
+    "Korea_Japan_Australia_NewZealand": ["Korea, Republic of", "Korea, Democratic People's Republic of", "Japan", "Australia", "New Zealand"]
 }
 
 always_include = ["United Kingdom", "United States", "China"]

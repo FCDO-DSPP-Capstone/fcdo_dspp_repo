@@ -156,6 +156,6 @@ del sentence_df, embedding_model, topic_model, sentence_docs, sentence_embedding
 ############# 3.  export filtered embeddings and data frame 
 #############################################################################
 
-np.save('Text Analysis Folder/testing_final/tech_embeddings.npy', tech_embeddings)
+np.save('Text Analysis Folder/data_out/tech_embeddings.npy', tech_embeddings)
 
-tech_topcis_df.to_csv('Text Analysis Folder/testing_final/tech_topcis_df.csv', index=False)
+tech_topcis_df.to_csv('Text Analysis Folder/data_out/tech_topcis_df.csv', index=False)

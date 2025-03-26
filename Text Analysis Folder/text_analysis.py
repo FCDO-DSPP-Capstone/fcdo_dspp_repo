@@ -22,7 +22,7 @@ from dash import dcc, html, Input, Output
 
 ## 1. import csv 
 
-sentence_df = pd.read_csv("Text Analysis Folder/testing_final/tech_topcis_df.csv")
+sentence_df = pd.read_csv("Text Analysis Folder/data_out/tech_topcis_df.csv")
 
 print(sentence_df["Year"].unique())
 
@@ -59,7 +59,7 @@ groups = {
     "Indian_Subcontinent": ["India", "Pakistan", "Bangladesh", "Nepal", "Sri Lanka", "Maldives", "Bhutan"],
 
     # Korea, Japan, Australia, New Zealand
-    "Korea_Japan_Australia_NewZealand": ["South Korea", "North Korea", "Japan", "Australia", "New Zealand"]
+    "Korea_Japan_Australia_NewZealand": ["Korea, Republic of", "Korea, Democratic People's Republic of", "Japan", "Australia", "New Zealand"]
 }
 
 # Always include these major countries
@@ -374,3 +374,33 @@ if __name__ == '__main__':
 #### visuazlaition 3:
 #### Viz of countries cisne similarity embeddings 
 ####################################
+
+# Define topic-to-group mapping by topic numbers
+topic_groups = {
+    "Military Technology": [0, 1, 2],  # Nuclear Weapons, Biological Weapons, Chemical Weapons
+    "Dual Use Technology": [3, 4, 5, 6, 7, 8, 9, 10, 19, 20, 21, 12, 13, 14, 15, 16, 17, 18],  # AI, Quantum Tech, etc.
+    "Civilian Technology": [11, 12, 13, 14, 15, 16, 17, 18],  # Climate change, Electric cars, etc.
+    "Capacity Building": [16, 17, 18],  # Digital Divide, Tech Capacity Building, etc.
+    "Grey Zone": [19, 20, 21]  # Cyberattacks, Election Interference, etc.
+}
+
+# Function to assign group based on topic number(s)
+def assign_group_by_number(topics):
+    # If 'topics' is a single integer, convert it into a list
+    if isinstance(topics, int):
+        topics = [topics]  # Make it iterable
+
+    # Check which group the topics belong to
+    for group, topic_list in topic_groups.items():
+        if any(topic in topic_list for topic in topics):
+            return group
+    return "Uncategorized"  # Default if no match found
+
+# Apply function to create "group" column based on topic numbers
+sentence_df["group"] = sentence_df["Topic"].apply(assign_group_by_number)
+
+# Print names of countries that contain "Korea"
+countries_with_korea = [
+    str(country).lower() for country in sentence_df['Country Name'].unique()
+    if 'Korea' in str(country)
+]
