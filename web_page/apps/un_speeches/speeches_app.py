@@ -326,7 +326,7 @@ def update_graph(topic_group, reference_country, country_group):
     filtered_df = filtered_df[filtered_df['Reference'] == reference_country]
 
     # Plot the results using Plotly Express
-    fig_height = 800
+    fig_height = 600
     if filtered_df.empty:
         fig = {}
     else:
