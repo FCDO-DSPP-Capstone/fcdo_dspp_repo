@@ -343,6 +343,9 @@ def update_pie_charts(selected_countries):
 
     # Add a pie chart for each selected country
     pastel_palette = pc.qualitative.Pastel
+    all_topics = sentence_df['Topic Name'].unique()
+    color_map = {topic: pastel_palette[i % len(pastel_palette)] for i, topic in enumerate(all_topics)}
+
     for i, country in enumerate(selected_countries):
         filtered_df = sentence_df[sentence_df['Country Name'] == country]
         values = filtered_df['Topic Name'].value_counts().values
@@ -350,7 +353,7 @@ def update_pie_charts(selected_countries):
 
         fig.add_trace(go.Pie(values=values, labels=labels, hoverinfo='label+percent', showlegend=True,
                              textfont=dict(size=14, family='Helvetica'),
-                             marker=dict(colors=[pastel_palette[j % len(pastel_palette)] for j in range(len(labels))])),
+                             marker=dict(colors=[color_map[label] for label in labels])),
                       row=1, col=i+1)
         
         fig.update_traces(textposition='inside')
