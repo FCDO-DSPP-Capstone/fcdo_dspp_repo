@@ -1,8 +1,6 @@
 ### UN voting process source code ### 
-""" This scripts imports the results from the PCA and clustering of UN votes to 
-make an app with plots, table and more information
-It also enrich the data set with world bank data for population and GDP
-
+""" This scripts imports the results from the PCA  to make an app 
+with plots, tables and more information.
 """
 ####################################
 ## 0. PACKAGES ##################
@@ -16,9 +14,6 @@ import dash
 from dash import dcc, html, Input, Output, dash_table
 import pandas as pd
 from dash.dash_table import DataTable, FormatTemplate
-
-from sklearn.metrics import pairwise_distances
-
 
 ####################################
 ## 1. IMPORT DATA ##################

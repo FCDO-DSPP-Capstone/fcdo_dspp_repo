@@ -378,15 +378,19 @@ def update_pie_charts(selected_countries):
                         subplot_titles=selected_countries)
 
     # Add a pie chart for each selected country
+    pastel_palette = pc.qualitative.Pastel
     for i, country in enumerate(selected_countries):
         filtered_df = sentence_df[sentence_df['Country Name'] == country]
         values = filtered_df['Topic Name'].value_counts().values
         labels = filtered_df['Topic Name'].value_counts().index
 
         fig.add_trace(go.Pie(values=values, labels=labels, hoverinfo='label+percent', showlegend=True,
-                             textfont=dict(size=14, family='Helvetica')),
+                             textfont=dict(size=14, family='Helvetica'),
+                             marker=dict(colors=[pastel_palette[j % len(pastel_palette)] for j in range(len(labels))])),
                       row=1, col=i+1)
-                    
+        
+        fig.update_traces(textposition='inside')
+        fig.update_layout(uniformtext_minsize=12, uniformtext_mode='hide')
         fig.update_annotations(font=dict(family="Helvetica"))
 
 
