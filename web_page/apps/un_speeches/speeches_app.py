@@ -138,13 +138,13 @@ app.layout = html.Div([
 
     html.Br(),
 
-        html.H2("Share of Topics by country", style={'font-family': 'Helvetica'}),
+        html.H3("Share of Topics by country", style={'font-family': 'Helvetica'}),
     dcc.Dropdown(
         id='country-dropdown',
         options=[{'label': country, 'value': country} for country in unique_countries],
-        value=['United Kingdom', 'United States', 'China'],
+        value=['United Kingdom', 'United States'],
         multi=True,
-        style={'width': '75%', 'font-family': 'Helvetica'}
+        style={'width': '100%', 'font-family': 'Helvetica'}
     ),
     html.Div(id='pie-charts-container')
 ])
@@ -332,7 +332,7 @@ def update_graph(topic_group, reference_country, country_group):
     filtered_df = filtered_df[filtered_df['Reference'] == reference_country]
 
     # Plot the results using Plotly Express
-    fig_height = 800
+    fig_height = 600
     if filtered_df.empty:
         fig = {}
     else:
