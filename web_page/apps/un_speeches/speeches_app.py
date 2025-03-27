@@ -14,6 +14,9 @@ sentence_df = pd.read_csv("tech_topcis_df.csv")
 network_df = sentence_df[~((sentence_df["Topic Name"] == "Nuclear Weapons") | (sentence_df["Topic Name"] == "Climate Change and Renewable Energy"))]
 similarity_df = pd.read_csv('similarity_df.csv')
 
+unique_countries = sentence_df['Country Name'].dropna().unique().tolist()
+
+
 # Define groups
 groups = {
     "ASEAN": ["Brunei", "Cambodia", "Indonesia", "Laos", "Malaysia", "Myanmar", "Philippines", "Singapore", "Thailand", "Vietnam"],
@@ -360,8 +363,6 @@ def update_graph(topic_group, reference_country, country_group):
     return fig
 
 
-
-unique_countries = sentence_df['Country Name'].dropna().unique().tolist()
 
 @app.callback(
     Output('pie-charts-container', 'children'),
