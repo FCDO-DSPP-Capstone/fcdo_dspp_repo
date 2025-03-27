@@ -1,23 +1,13 @@
 import os
 import pandas as pd
 import numpy as np
-from sklearn.metrics.pairwise import cosine_similarity
 import plotly.graph_objects as go
 import plotly.express as px
 import networkx as nx
 import plotly.colors as pc
 import dash
 from dash import dcc, html, Input, Output
-import os
-import pandas as pd
-import numpy as np
-from sklearn.metrics.pairwise import cosine_similarity
-import plotly.graph_objects as go
-import plotly.express as px
-import networkx as nx
-import plotly.colors as pc
-import dash
-from dash import dcc, html, Input, Output
+from plotly.subplots import make_subplots
 
 # Import CSVs
 sentence_df = pd.read_csv("tech_topcis_df.csv")
@@ -141,7 +131,19 @@ app.layout = html.Div([
         id='reference-country-dropdown',
         style={'font-family': 'Helvetica'}
     ),
-    dcc.Graph(id='similarity-graph', style={'font-family': 'Helvetica'})
+    dcc.Graph(id='similarity-graph', style={'font-family': 'Helvetica'}),
+
+    html.Br(),
+
+        html.H2("Share of Topics by country", style={'font-family': 'Helvetica'}),
+    dcc.Dropdown(
+        id='country-dropdown',
+        options=[{'label': country, 'value': country} for country in unique_countries],
+        value=['United Kingdom', 'United States', 'China'],
+        multi=True,
+        style={'width': '75%', 'font-family': 'Helvetica'}
+    ),
+    html.Div(id='pie-charts-container')
 ])
 
 # Callback for updating network graph
@@ -301,6 +303,7 @@ def update_trends_graph(max_mentions):
     )
 
     return fig
+
 # Callback for updating similarity graph
 @app.callback(
     Output('reference-country-dropdown', 'options'),
@@ -326,25 +329,25 @@ def update_graph(topic_group, reference_country, country_group):
     filtered_df = filtered_df[filtered_df['Reference'] == reference_country]
 
     # Plot the results using Plotly Express
-    fig_height = 600
+    fig_height = 800
     if filtered_df.empty:
         fig = {}
     else:
         pastel_palette = pc.qualitative.Pastel
         color_map = {}  # Create a mapping of countries to pastel colors
-        country_list = [country for group in groups.values() for country in group]
+        country_list = [country for group in group_dfs.values() for country in group]
         for i, country in enumerate(country_list):
             color_map[country] = pastel_palette[i % len(pastel_palette)]
-
+        
         fig = px.scatter(
             filtered_df, 
             x='Year', 
             y='Similarity', 
             color='Country Name', 
+            color_discrete_map=color_map,
             title=f'Similarity of {country_group} against {reference_country} on {topic_group}',
             template="plotly_white",
             height=fig_height,
-            color_discrete_map=color_map
         )
         fig.update_traces(mode='lines+markers', line_shape='spline')
         fig.update_layout(yaxis_range=[0,1], font=dict(family="Helvetica"))
@@ -356,7 +359,40 @@ def update_graph(topic_group, reference_country, country_group):
         line=dict(color='black', shape='spline', width=5))
     return fig
 
+
+
+unique_countries = sentence_df['Country Name'].dropna().unique().tolist()
+
+@app.callback(
+    Output('pie-charts-container', 'children'),
+    [Input('country-dropdown', 'value')]
+)
+def update_pie_charts(selected_countries):
+    if not selected_countries:
+        return []
+
+    # Create subplots
+    num_countries = len(selected_countries)
+    fig = make_subplots(rows=1, cols=num_countries, specs=[[{'type': 'pie'}]*num_countries],
+                        subplot_titles=selected_countries)
+
+    # Add a pie chart for each selected country
+    for i, country in enumerate(selected_countries):
+        filtered_df = sentence_df[sentence_df['Country Name'] == country]
+        values = filtered_df['Topic Name'].value_counts().values
+        labels = filtered_df['Topic Name'].value_counts().index
+
+        fig.add_trace(go.Pie(values=values, labels=labels, hoverinfo='label+percent', showlegend=False,
+                             textfont=dict(size=14, family='Helvetica')),
+                      row=1, col=i+1)
+                    
+        fig.update_annotations(font=dict(family="Helvetica"))
+
+
+        
+
+    return dcc.Graph(figure=fig)
+
 # Run the app
 if __name__ == '__main__':
     app.run_server(debug=True)
-
