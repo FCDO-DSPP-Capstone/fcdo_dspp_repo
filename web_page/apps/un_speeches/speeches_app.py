@@ -383,7 +383,7 @@ def update_pie_charts(selected_countries):
         values = filtered_df['Topic Name'].value_counts().values
         labels = filtered_df['Topic Name'].value_counts().index
 
-        fig.add_trace(go.Pie(values=values, labels=labels, hoverinfo='label+percent', showlegend=False,
+        fig.add_trace(go.Pie(values=values, labels=labels, hoverinfo='label+percent', showlegend=True,
                              textfont=dict(size=14, family='Helvetica')),
                       row=1, col=i+1)
                     
