@@ -113,7 +113,27 @@ app.layout = html.Div([
         step=1,
         value=[0, max_mentions_per_topic.max()]
     ),
-    dcc.Graph(id="topic-trends-graph"),
+        dcc.Graph(id="topic-trends-graph"),
+        
+        
+        html.Br(),
+
+
+
+        html.H3("Share of Topics by country", style={'font-family': 'Helvetica'}),
+    dcc.Dropdown(
+        id='country-dropdown',
+        options=[{'label': country, 'value': country} for country in unique_countries],
+        value=['United Kingdom', 'United States'],
+        multi=True,
+        style={'width': '100%', 'font-family': 'Helvetica'}
+    ),
+    html.Div(id='pie-charts-container'),
+    
+    
+    html.Br(),
+    html.Br(),
+
     html.H3("Country Speeches Similarity Analysis", style={'font-family': 'Helvetica'}),
     html.Label("Select a Topic Group", style={'font-family': 'Helvetica'}),
     dcc.Dropdown(
@@ -136,19 +156,11 @@ app.layout = html.Div([
     ),
     dcc.Graph(id='similarity-graph', style={'font-family': 'Helvetica'}),
 
-    html.Br(),
-
-        html.H3("Share of Topics by country", style={'font-family': 'Helvetica'}),
-    dcc.Dropdown(
-        id='country-dropdown',
-        options=[{'label': country, 'value': country} for country in unique_countries],
-        value=['United Kingdom', 'United States'],
-        multi=True,
-        style={'width': '100%', 'font-family': 'Helvetica'}
-    ),
-    html.Div(id='pie-charts-container')
 ])
 
+#########################
+##### 1. NETWORK GRAPH
+#########################
 # Callback for updating network graph
 @app.callback(
     [Output("network-graph", "figure"),
@@ -277,6 +289,11 @@ def update_network_graph(group_name, click_data):
 
     return main_fig, highlighted_fig
 
+
+
+##################################################
+##### 2. TOPIC COUNT OVER TIME LINE GRPAH
+##################################################
 # Callback for updating topic trends graph
 @app.callback(
     Output("topic-trends-graph", "figure"),
@@ -307,6 +324,48 @@ def update_trends_graph(max_mentions):
 
     return fig
 
+##################################################
+##### 3. PIE CHARTS COUNTS BY COUNTRY
+##################################################
+
+@app.callback(
+    Output('pie-charts-container', 'children'),
+    [Input('country-dropdown', 'value')]
+)
+def update_pie_charts(selected_countries):
+    if not selected_countries:
+        return []
+
+    # Create subplots
+    num_countries = len(selected_countries)
+    fig = make_subplots(rows=1, cols=num_countries, specs=[[{'type': 'pie'}]*num_countries],
+                        subplot_titles=selected_countries)
+
+    # Add a pie chart for each selected country
+    pastel_palette = pc.qualitative.Pastel
+    for i, country in enumerate(selected_countries):
+        filtered_df = sentence_df[sentence_df['Country Name'] == country]
+        values = filtered_df['Topic Name'].value_counts().values
+        labels = filtered_df['Topic Name'].value_counts().index
+
+        fig.add_trace(go.Pie(values=values, labels=labels, hoverinfo='label+percent', showlegend=True,
+                             textfont=dict(size=14, family='Helvetica'),
+                             marker=dict(colors=[pastel_palette[j % len(pastel_palette)] for j in range(len(labels))])),
+                      row=1, col=i+1)
+        
+        fig.update_traces(textposition='inside')
+        fig.update_layout(uniformtext_minsize=12, uniformtext_mode='hide')
+        fig.update_annotations(font=dict(family="Helvetica"))
+
+
+        
+
+    return dcc.Graph(figure=fig)
+
+
+##################################################
+##### 4. SIMILARITY GRAPH
+##################################################
 # Callback for updating similarity graph
 @app.callback(
     Output('reference-country-dropdown', 'options'),
@@ -362,41 +421,6 @@ def update_graph(topic_group, reference_country, country_group):
         line=dict(color='black', shape='spline', width=5))
     return fig
 
-
-
-@app.callback(
-    Output('pie-charts-container', 'children'),
-    [Input('country-dropdown', 'value')]
-)
-def update_pie_charts(selected_countries):
-    if not selected_countries:
-        return []
-
-    # Create subplots
-    num_countries = len(selected_countries)
-    fig = make_subplots(rows=1, cols=num_countries, specs=[[{'type': 'pie'}]*num_countries],
-                        subplot_titles=selected_countries)
-
-    # Add a pie chart for each selected country
-    pastel_palette = pc.qualitative.Pastel
-    for i, country in enumerate(selected_countries):
-        filtered_df = sentence_df[sentence_df['Country Name'] == country]
-        values = filtered_df['Topic Name'].value_counts().values
-        labels = filtered_df['Topic Name'].value_counts().index
-
-        fig.add_trace(go.Pie(values=values, labels=labels, hoverinfo='label+percent', showlegend=True,
-                             textfont=dict(size=14, family='Helvetica'),
-                             marker=dict(colors=[pastel_palette[j % len(pastel_palette)] for j in range(len(labels))])),
-                      row=1, col=i+1)
-        
-        fig.update_traces(textposition='inside')
-        fig.update_layout(uniformtext_minsize=12, uniformtext_mode='hide')
-        fig.update_annotations(font=dict(family="Helvetica"))
-
-
-        
-
-    return dcc.Graph(figure=fig)
 
 # Run the app
 if __name__ == '__main__':
