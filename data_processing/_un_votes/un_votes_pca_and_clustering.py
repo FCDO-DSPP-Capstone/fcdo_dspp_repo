@@ -334,6 +334,6 @@ association_scores = pd.merge(
 ## 5. export pca_results      ##
 ####################################
 
-pca_results.to_csv('Juan - UN votes/pca_results.csv', index=False)
+pca_results.to_csv('data_processing/_un_votes/pca_results.csv', index=False)
 
-association_scores.to_csv('Juan - UN votes/association_scores.csv', index=False)
+association_scores.to_csv('data_processing/_un_votes/association_scores.csv', index=False)

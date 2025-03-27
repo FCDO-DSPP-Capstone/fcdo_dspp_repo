@@ -77,7 +77,7 @@ all_data = ai_data + qt_data + eb_data
 df = pd.DataFrame(all_data)
 
 #save as CSV
-df.to_csv("Grant - OpenAlex/openalex_combined_dataset.csv", index=False)
+df.to_csv("data_processing/_research_networks/openalex_combined_dataset.csv", index=False)
 
 print("Dataset saved as 'openalex_combined_dataset.csv'")
 

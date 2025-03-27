@@ -15,7 +15,7 @@ from sentence_transformers import SentenceTransformer
 
 
 
-root_folder_path = 'Text Analysis Folder/UN_Speeches'
+root_folder_path = 'data_processing/_un_speeches/UN_Speeches'
 
 def parse_filename(filename):
     name_parts = filename.replace('.txt', '').split('_')
@@ -152,12 +152,12 @@ del sentence_df, embedding_model, topic_model, sentence_docs, sentence_embedding
 
 
 #############################################################################
-############# 3.  export filtered embeddings and data frame 
+############# 3.  export filtered embeddings and sentences topic labeled data frame 
 #############################################################################
 
-np.save('Text Analysis Folder/data_out/tech_embeddings.npy', tech_embeddings)
+np.save('data_processing/_un_speeches/data_out/tech_embeddings.npy', tech_embeddings)
 
-tech_topcis_df.to_csv('Text Analysis Folder/data_out/tech_topcis_df.csv', index=False)
+tech_topcis_df.to_csv('data_processing/_un_speeches/data_out/tech_topcis_df.csv', index=False)
 
 #############################################################################
 ############# 4. Re import and generation of cosine simiality data frame 
@@ -168,8 +168,8 @@ import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 
 
-sentence_df = pd.read_csv("Text Analysis Folder/data_out/tech_topcis_df.csv")
-embeddings = np.load("Text Analysis Folder/data_out/tech_embeddings.npy")
+sentence_df = pd.read_csv("data_processing/_un_speeches/data_out/tech_topcis_df.csv")
+embeddings = np.load("data_processing/_un_speeches/data_out/tech_embeddings.npy")
 
 topic_groups = {
     "Military Technology": [0, 1, 2],  # Nuclear Weapons, Biological Weapons, Chemical Weapons
@@ -303,4 +303,4 @@ similarity_df = calculate_cosine_similarity(grouped_keys, avg_embeddings)
 
 
 
-export = similarity_df.to_csv('Text Analysis Folder/data_out/similarity_df.csv', index=False)
+export = similarity_df.to_csv('data_processing/_un_speeches/data_out/similarity_df.csv', index=False)
