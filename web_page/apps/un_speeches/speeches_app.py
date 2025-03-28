@@ -121,6 +121,10 @@ app.layout = html.Div([
 
 
         html.H3("Share of Topics by country", style={'font-family': 'Helvetica'}),
+
+         html.Div("Select countries to see pie charts.",
+             style={"text-align": "left","font-size": "14px", 'font-family': 'Helvetica'}),
+    
     dcc.Dropdown(
         id='country-dropdown',
         options=[{'label': country, 'value': country} for country in unique_countries],
@@ -135,6 +139,15 @@ app.layout = html.Div([
     html.Br(),
 
     html.H3("Country Speeches Similarity Analysis", style={'font-family': 'Helvetica'}),
+
+        html.Div([
+    html.P("In these plots, we compare the similarity of speeches between countries across years in relation to a reference country in 2021. "
+           "You must select a Topic group, a Country group to analyze, and a reference country against which to compare the similarity. "
+           "The plot also displays the average similarity of all countries in the group. Together with the legend selector, you can easily see how an individual country relates to the average "
+           "of its group in its similarity of speech to the reference country.",
+           style={'font-family': 'Helvetica', 'font-size': '12px'}) 
+           ]),
+
     html.Label("Select a Topic Group", style={'font-family': 'Helvetica'}),
     dcc.Dropdown(
         id='topic-group-dropdown',
