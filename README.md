@@ -74,5 +74,6 @@ Contains four folders, each with the corresponding app for its respective datase
 ## Comtrade
 - **Data Bug Fix:**  
   - Resolve the issue with underlying data for 2024, where some countries (e.g., China) show 0 exports incorrectly.  
+  - Solve issue with partner counter not listing any partner for countries with small values of trade, probably a problem with only counting imports and/or exports.
 - **Country selector -> List of countries by trade value**
 
