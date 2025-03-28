@@ -94,14 +94,14 @@ app.layout = html.Div([
 
    html.Div([
     html.P("These tables measure the distances of individual countries in relation to others.", 
-           style={'font-family': 'Helvetica', 'font-size': '12px'}),
+           style={'font-family': 'Helvetica', 'font-size': '14px'}),
     
     html.Ul([
         html.Li([
             html.Strong("First Table: ", style={'font-family': 'Helvetica', 'font-size': '12px'}),
             html.Span("Select a country to view its pair-wise mean distance to all other countries from 1990 to 2024. "
                       "Smaller numbers indicate closer similarity in voting patterns.",
-                      style={'font-family': 'Helvetica', 'font-size': '12px'})
+                      style={'font-family': 'Helvetica', 'font-size': '14px'})
         ]),
         html.Li([
             html.Strong("Second Table: ", style={'font-family': 'Helvetica', 'font-size': '12px'}),
