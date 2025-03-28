@@ -145,7 +145,7 @@ app.layout = html.Div([
            "You must select a Topic group, a Country group to analyze, and a reference country against which to compare the similarity. "
            "The plot also displays the average similarity of all countries in the group. Together with the legend selector, you can easily see how an individual country relates to the average "
            "of its group in its similarity of speech to the reference country.",
-           style={'font-family': 'Helvetica', 'font-size': '12px'}) 
+           style={'font-family': 'Helvetica', 'font-size': '14px'}) 
            ]),
 
     html.Label("Select a Topic Group", style={'font-family': 'Helvetica'}),
