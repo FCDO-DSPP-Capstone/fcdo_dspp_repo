@@ -63,13 +63,16 @@ Contains four folders, each with the corresponding app for its respective datase
 
 ## Scientific Research
 - **Institution Analysis:**  
-  - Add an explorer to identify the most relevant institutions per country and their strongest connections.  
-- **Collaboration Networks:**  
+  - Add an explorer to identify the most relevant institutions per country and their strongest connections.
+- **Collaboration Sub Networks:**  
   - Implement a filter to generate local collaboration networks by country.  
 - **Research Insights:**  
   - Create a table or treemap displaying the most relevant papers in a given year or topic.
+  - Add quality filters to filter out "low quality" Journals
+
 
 ## Comtrade
 - **Data Bug Fix:**  
   - Resolve the issue with underlying data for 2024, where some countries (e.g., China) show 0 exports incorrectly.  
+- **Country selector -> List of countries by trade value**
 
