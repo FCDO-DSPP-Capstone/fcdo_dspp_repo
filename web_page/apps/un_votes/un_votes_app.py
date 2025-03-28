@@ -92,6 +92,26 @@ app.layout = html.Div([
 
     html.Div(style={'height': '100px'}),
 
+   html.Div([
+    html.P("These tables measure the distances of individual countries in relation to others.", 
+           style={'font-family': 'Helvetica', 'font-size': '12px'}),
+    
+    html.Ul([
+        html.Li([
+            html.Strong("First Table: ", style={'font-family': 'Helvetica', 'font-size': '12px'}),
+            html.Span("Select a country to view its pair-wise mean distance to all other countries from 1990 to 2024. "
+                      "Smaller numbers indicate closer similarity in voting patterns.",
+                      style={'font-family': 'Helvetica', 'font-size': '12px'})
+        ]),
+        html.Li([
+            html.Strong("Second Table: ", style={'font-family': 'Helvetica', 'font-size': '12px'}),
+            html.Span("Displays the average distance of each country to all others across all years. "
+                      "Smaller numbers represent a higher 'friendliness' score, meaning the country tends to have more aligned voting patterns with any other one.",
+                      style={'font-family': 'Helvetica', 'font-size': '13px'})
+        ])
+    ])
+]),
+
     ## Table of relations beteween countries based on the PCA
         # first, the selector of country button 
     html.H3("Country Pairwise mean distance 1990 - 2024", style={'font-family': 'Helvetica'}),
