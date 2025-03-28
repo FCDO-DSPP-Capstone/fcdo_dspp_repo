@@ -90,7 +90,7 @@ app.layout = html.Div([
         marks={str(i): {'label': str(int(i * 100)) + '%', 'style': {'font-family': 'Helvetica'}} for i in np.arange(0, 1.01, 0.05)},
     ),
 
-    html.Div(style={'height': '100px'}),
+    html.Div(style={'height': '50px'}),
 
    html.Div([
     html.P("These tables measure the distances of individual countries in relation to others.", 
@@ -107,7 +107,7 @@ app.layout = html.Div([
             html.Strong("Second Table: ", style={'font-family': 'Helvetica', 'font-size': '12px'}),
             html.Span("Displays the average distance of each country to all others across all years. "
                       "Smaller numbers represent a higher 'friendliness' score, meaning the country tends to have more aligned voting patterns with any other one.",
-                      style={'font-family': 'Helvetica', 'font-size': '13px'})
+                      style={'font-family': 'Helvetica', 'font-size': '14px'})
         ])
     ])
 ]),
