@@ -3,9 +3,10 @@ Web page: https://fcdo-dspp-capstone.github.io/fcdo_dspp_repo/
 
 ----------------------------
 This project was developed as the 2025 Capstone project for the MPA - Data Science for Public Policy program at the London School of Economics.  
-Authors: Grant Benton, Juan Piquer, Cat Russell and Rhea Soni
-  
+Authors: Grant Benton, Juan Piquer, Cat Russell and Rhea Soni.
+
 Thanks to our LSE supervisor Alexander Evans, our FCDO client James Sherbrock, and our Data science tutor Casey Kearney.
+  
 ----------------------------
 
 # Repo Structure
