@@ -17,7 +17,7 @@ similarity_df = pd.read_csv('similarity_df.csv')
 unique_countries = sentence_df['Country Name'].dropna().unique().tolist()
 
 
-# Define groups
+# Define country groups
 groups = {
     "ASEAN": ["Brunei", "Cambodia", "Indonesia", "Laos", "Malaysia", "Myanmar", "Philippines", "Singapore", "Thailand", "Vietnam"],
     "Original_EU_plus": ["Belgium", "France", "Germany", "Italy", "Luxembourg", "Netherlands", "Austria", "Ireland"],

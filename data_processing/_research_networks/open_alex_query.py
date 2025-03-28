@@ -1,6 +1,8 @@
 import requests
 import pandas as pd
 
+
+## Query data from open alex. 10.000 random results per topic.
 def fetch_openalex_data(concept_id, topic_label, start_year, end_year):
     url = "https://api.openalex.org/works"
     params = {

@@ -35,7 +35,7 @@ colors = ['rgb(17, 112, 170)', 'rgb(252, 125, 11)', 'rgb(163, 172, 185)', 'rgb(9
 color_mapping = {region: color for region, color in zip(unique_regions, colors[:len(unique_regions)])}
 
 #######################################################
-## 2. UN PCA votes plot with year slider ##
+## 2. UN PCA votes plot ##
 #######################################################
 
 #### Combined app testing 
