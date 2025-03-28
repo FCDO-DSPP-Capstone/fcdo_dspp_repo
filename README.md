@@ -33,13 +33,7 @@ Contains four folders, each with the corresponding app for its respective datase
 3. OpenAlex: [Networks](https://networkx.org)  
 4. Comtrade: Networks  
 
-----------------------------
-This project was developed as the 2025 Capstone project for the MPA - Data Science for Public Policy program at the London School of Economics.  
-Authors: Grant Benton, Juan Piquer, Cat Russell and Rhea Soni.  
 
-Thanks to our LSE supervisor Alexander Evans, our FCDO client James Sherbrock, and our Data science tutor Casey Kearney.
-
-----------------------------
 # Suggested Next Steps in Development
 
 ## UN Votes
