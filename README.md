@@ -30,8 +30,8 @@ Contains four folders, each with the corresponding app for its respective datase
 # Methods used
 1. UN Votes: [PCA](https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html)  
 2. UN Speeches: [BERTopic](https://maartengr.github.io/BERTopic/index.html)  
-3. OpenAlex: [Networks](https://networkx.org)  
-4. Comtrade: Networks  
+3. OpenAlex: [NetworkX](https://networkx.org)  
+4. Comtrade: NetworkX 
 
 
 # Suggested Next Steps in Development
